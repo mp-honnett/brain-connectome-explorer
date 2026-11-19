@@ -8,3 +8,33 @@
 .layer-toggle input:disabled{opacity:.4;cursor:not-allowed}
 .layer-divider{margin:18px 0 14px;border-top:1px solid #2a4158}
 .panel input[type="range"]:disabled{opacity:.35;cursor:not-allowed}
+
+/* Site navigation, attribution and legal notices */
+.site-nav{display:flex;align-items:center;gap:8px}
+.site-tab{border:1px solid transparent;border-radius:9px;background:transparent;color:#a7c0d4;padding:10px 14px;font-size:13px;font-weight:700}
+.site-tab:hover{background:#1a354c;color:#e9f6ff}
+.site-tab.active{background:#183b51;border-color:#4483a2;color:#a9ebff}
+.site-tab:focus-visible,.footer-credits:focus-visible{outline:3px solid #81dfff;outline-offset:3px}
+.footer-credits{display:inline;color:#77d3f1;background:transparent;padding:0;border:0;border-radius:0;font-size:inherit;font-weight:inherit}
+.footer-credits:hover{text-decoration:underline}
+.credits-page{grid-column:1/-1;width:min(1050px,100%);margin:0 auto;padding:36px 28px 66px;color:#e7f2fa}
+.credits-intro{max-width:830px}
+.credits-intro h1{font-size:clamp(30px,3.4vw,46px);line-height:1.12;margin:10px 0 16px}
+.credits-intro>p:not(.eyebrow){line-height:1.75;color:#b5cbd9}
+.credits-alert{margin:20px 0 26px;padding:16px 18px;border:1px solid #b88749;border-radius:9px;background:#302619;color:#ffdeb8;line-height:1.65;font-size:13px}
+.credit-section{margin:33px 0}
+.credit-section h2{font-size:22px;border-bottom:1px solid #294359;padding-bottom:11px;margin-bottom:15px}
+.credit-entry{padding:18px 21px;margin:13px 0;background:#0f2031;border:1px solid #263f55;border-radius:12px;color:#b6cddc;line-height:1.68}
+.credit-entry h3{font-size:16px;color:#edf7ff;margin:0}
+.credit-entry p{margin:12px 0;font-size:13px}
+.credit-entry strong{color:#e1f1ff}
+.credit-entry code{font-size:12px;background:#162e40;padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}
+.credit-entry-head{display:flex;align-items:start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.credit-status{padding:4px 8px;font-weight:700;font-size:11px;border-radius:6px;background:#17394b;color:#a2e7fa}
+.credit-status.needs-review{background:#49351f;color:#ffd599}
+.credit-links{display:flex;gap:10px 20px;flex-wrap:wrap;padding-top:8px}
+.credit-links a{font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.credit-caution{color:#ffd4af}
+.credits-footnote{font-size:12px;color:#879caf;margin-top:36px}
+@media(max-width:1060px){header{height:auto;min-height:85px;flex-wrap:wrap;gap:14px}.site-nav{order:3;width:100%;justify-content:center}.site-tab{flex:1;max-width:240px}}
+@media(max-width:600px){.credits-page{padding:26px 16px 50px}.credits-alert{padding:13px}.credit-entry{padding:15px}.credit-entry-head{flex-direction:column}}
