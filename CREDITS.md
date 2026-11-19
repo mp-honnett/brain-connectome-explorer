@@ -7,7 +7,9 @@
 
 - **Licence:** [PolyForm Noncommercial 1.0.0](LICENSE.md) (SPDX: `PolyForm-Noncommercial-1.0.0`). The repository’s original code is provided for permitted noncommercial uses, including the organisational categories allowed in the actual licence text. Commercial use outside those permissions requires a separate licence from the correct copyright owner.
 - **Scope and exclusions:** [LICENSING.md](LICENSING.md). Independent data, atlas and package rights do not become PolyForm-licensed because they are in this repository.
-- **Copyright owner notice:** **To be confirmed.** The legal owner of project-original source must be verified before issuing an attributed `Required Notice:` line, particularly where employment or contractual IP ownership might be relevant. Do not infer ownership from the repository URL.
+- **Copyright holder:** **Honnett Ltd** (identified by the project owner). Required notice: `Required Notice: Copyright (c) 2026 Honnett Ltd.`
+- **Trademark:** **Tweenbrain is a trademark of Honnett Ltd** (identified by the project owner). Required notice: `Required Notice: Tweenbrain is a trademark of Honnett Ltd.` This does not claim trademark registration.
+- **Notice file:** [NOTICE.txt](NOTICE.txt). Copies and permitted adaptations of the software must preserve the applicable PolyForm licence and required notices; the licence grants no brand endorsement rights.
 
 
 This register lists the content **actually incorporated** into Brain Connectome Explorer. Scientific citations, copyright licences, access rights and dataset/atlas validation are distinct questions. It is not legal advice or a blanket assertion that all rights are cleared.
@@ -33,7 +35,7 @@ This register lists the content **actually incorporated** into Brain Connectome 
 ## 3. 3D outer head — in use; original procedural geometry
 
 - **Source:** `src/HeadShell.tsx`, developed for this app using procedural geometric primitives. Not a third-party CT or scalp scan.
-- **Licence of app-original code:** [PolyForm Noncommercial 1.0.0](LICENSE.md) for original authored software, subject to confirmed copyright authority. This is a source-available, commercial-use-restricted licence, **not** an OSI-approved open-source licence.
+- **Licence of app-original code:** [PolyForm Noncommercial 1.0.0](LICENSE.md) for original authored software owned by Honnett Ltd. This is a source-available, commercial-use-restricted licence, **not** an OSI-approved open-source licence.
 - **Changes / description:** Generic illustrative head shell with adjustable opacity and optional wireframe; aligned to the visualisation's MNI-like axes.
 - **Qualification:** Not a medically validated anatomical reconstruction.
 
