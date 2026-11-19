@@ -1,0 +1,31 @@
+name: Inspect Yale data access
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/inspect-yale.yml
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install AWS CLI
+        run: pip install awscli
+      - name: Inspect public dataset directories
+        run: |
+          set -e
+          mkdir -p inspection
+          echo "# OpenNeuro ds007286 S3 listing" > inspection/report.txt
+          for prefix in "ds007286/" "ds007286/derivatives/" "ds007286/derivatives/MC_Shen 268/"; do
+            echo "" | tee -a inspection/report.txt
+            echo "PREFIX: $prefix" | tee -a inspection/report.txt
+            aws s3 ls "s3://openneuro.org/$prefix" --no-sign-request 2>&1 | head -35 | tee -a inspection/report.txt || true
+          done
+          echo "ATLAS HTTP HEAD:" | tee -a inspection/report.txt
+          curl -sSLI "https://raw.githubusercontent.com/YaleMRRC/YaleNeuroConnect_FullPredictions/main/shen_2mm_268_parcellation_vol.nii" | head -18 | tee -a inspection/report.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yale-data-inspection
+          path: inspection/report.txt
