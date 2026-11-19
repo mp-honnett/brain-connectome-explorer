@@ -4,10 +4,12 @@ import { Suspense, useEffect, useMemo, useRef, useState, type ComponentRef } fro
 import * as THREE from "three";
 import type { Node, Edge } from "./types";
 import HeadShell from "./HeadShell";
+import LobeOverlay from "./LobeOverlay";
+import type { LobeSelection } from "./lobePalette";
 
 const transform = (p:[number,number,number]):[number,number,number] => [p[0]*.052,p[2]*.052,-p[1]*.052];
 
-export type ViewDirection = "rostral" | "caudal" | "top" | "bottom";
+export type ViewDirection = "rostral" | "caudal" | "top" | "bottom" | "left-lateral" | "right-lateral";
 export type CameraSnap = {direction: ViewDirection; serial: number};
 
 export type LayerSettings = {
@@ -18,6 +20,8 @@ export type LayerSettings = {
   parcels:boolean;
   connections:boolean;
   opacity:number;
+  lobeGuides:boolean;
+  lobeSelection:LobeSelection;
 };
 
 function AnatomySurface({center,opacity}:{center:THREE.Vector3;opacity:number}){
@@ -60,6 +64,7 @@ function Network({nodes,edges,selected,onSelect,layers}:{nodes:Node[];edges:Edge
  return <group>
   {layers.head&&<HeadShell center={center} opacity={layers.headOpacity} wireframe={layers.headWireframe}/>}
   {layers.anatomy&&<Suspense fallback={null}><AnatomySurface center={center} opacity={layers.opacity}/></Suspense>}
+  {layers.lobeGuides&&<LobeOverlay center={center} selection={layers.lobeSelection}/>}
   {layers.connections&&edges.map(e=><Line key={e.target} points={[coords(e.source),coords(e.target)]} color={e.value>=0?"#5fd4ff":"#ff9fbb"} lineWidth={Math.max(1,Math.abs(e.value)*3)} transparent opacity={.4+Math.abs(e.value)*.5}/>)}
   {layers.parcels&&nodes.map((n,i)=><mesh key={n.id} position={coords(i)} onClick={(e:ThreeEvent<MouseEvent>)=>{e.stopPropagation();onSelect(i)}} onPointerOver={(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();setHover(i)}} onPointerOut={()=>setHover(null)}>
    <sphereGeometry args={[i===selected?.14:.075,12,10]}/>
@@ -78,7 +83,9 @@ function CameraController({snap}:{snap:CameraSnap}){
      rostral:[0,0,-1],
      caudal:[0,0,1],
      top:[0,1,0],
-     bottom:[0,-1,0]
+     bottom:[0,-1,0],
+     "left-lateral":[-1,0,0],
+     "right-lateral":[1,0,0]
    };
    const [x,y,z]=directions[snap.direction];
    const distance=Math.max(9,camera.position.length());
