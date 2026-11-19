@@ -10,7 +10,7 @@ export default function App(){
  const [limit,setLimit]=useState(16);
  const [snap,setSnap]=useState<CameraSnap>({direction:"caudal",serial:0});
  const chooseView=(direction:ViewDirection)=>setSnap(prev=>({direction,serial:prev.serial+1}));
- const [layers,setLayers]=useState<LayerSettings>({anatomy:true,parcels:true,connections:true,opacity:.22});
+ const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.16,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22});
  const updateLayer=(part:Partial<LayerSettings>)=>setLayers(previous=>({...previous,...part}));
  const fileInput=useRef<HTMLInputElement>(null);
  const importData=(value:unknown)=>{const d=validateData(value);setData(d);setCondition(Object.keys(d.conditions)[0]);setSelected(0);setError("");};
@@ -30,6 +30,12 @@ export default function App(){
  </div>
  <p className="muted">Snap to a standard anatomical direction, then drag to rotate freely. Front and back refer to the brain's anatomical axes.</p></div>
  <div className="panel"><p className="eyebrow">ANATOMICAL LAYERS</p>
+ <label className="layer-toggle"><span><input type="checkbox" checked={layers.head} onChange={e=>updateLayer({head:e.target.checked})}/> Transparent human head</span></label>
+ <label>Head opacity <b>{Math.round(layers.headOpacity*100)}%</b></label>
+ <input type="range" min="0.02" max="0.65" step="0.01" disabled={!layers.head} value={layers.headOpacity} onChange={e=>updateLayer({headOpacity:Number(e.target.value)})}/>
+ <label className="layer-toggle"><span><input type="checkbox" disabled={!layers.head} checked={layers.headWireframe} onChange={e=>updateLayer({headWireframe:e.target.checked})}/> Head wireframe</span></label>
+ <p className="muted">Illustrative anatomical head shell for orientation. Not a subject-specific Yale MRI reconstruction.</p>
+ <div className="layer-divider" aria-hidden="true"></div>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.anatomy} onChange={e=>updateLayer({anatomy:e.target.checked})}/> Brain atlas envelope</span></label>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.parcels} onChange={e=>updateLayer({parcels:e.target.checked})}/> Shen268 parcel centres</span></label>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.connections} onChange={e=>updateLayer({connections:e.target.checked})}/> Functional correlations</span></label>
