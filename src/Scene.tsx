@@ -3,6 +3,7 @@ import { OrbitControls, Html, Line, useGLTF } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState, type ComponentRef } from "react";
 import * as THREE from "three";
 import type { Node, Edge } from "./types";
+import HeadShell from "./HeadShell";
 
 const transform = (p:[number,number,number]):[number,number,number] => [p[0]*.052,p[2]*.052,-p[1]*.052];
 
@@ -10,6 +11,9 @@ export type ViewDirection = "rostral" | "caudal" | "top" | "bottom";
 export type CameraSnap = {direction: ViewDirection; serial: number};
 
 export type LayerSettings = {
+  head:boolean;
+  headOpacity:number;
+  headWireframe:boolean;
   anatomy:boolean;
   parcels:boolean;
   connections:boolean;
@@ -54,6 +58,7 @@ function Network({nodes,edges,selected,onSelect,layers}:{nodes:Node[];edges:Edge
  };
  const neighbours=new Set([selected,...edges.map(e=>e.target)]);
  return <group>
+  {layers.head&&<HeadShell center={center} opacity={layers.headOpacity} wireframe={layers.headWireframe}/>}
   {layers.anatomy&&<Suspense fallback={null}><AnatomySurface center={center} opacity={layers.opacity}/></Suspense>}
   {layers.connections&&edges.map(e=><Line key={e.target} points={[coords(e.source),coords(e.target)]} color={e.value>=0?"#5fd4ff":"#ff9fbb"} lineWidth={Math.max(1,Math.abs(e.value)*3)} transparent opacity={.4+Math.abs(e.value)*.5}/>)}
   {layers.parcels&&nodes.map((n,i)=><mesh key={n.id} position={coords(i)} onClick={(e:ThreeEvent<MouseEvent>)=>{e.stopPropagation();onSelect(i)}} onPointerOver={(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();setHover(i)}} onPointerOut={()=>setHover(null)}>
