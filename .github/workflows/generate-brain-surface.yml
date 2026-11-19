@@ -1,0 +1,28 @@
+name: Generate brain anatomy layer
+on:
+  push:
+    paths:
+      - .github/workflows/generate-brain-surface.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  surface:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install mesh tooling
+        run: pip install numpy nibabel scipy scikit-image trimesh
+      - name: Generate atlas-registered glTF brain surface
+        run: python scripts/prepare_brain_envelope.py
+      - name: Commit rendered surface
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/brain-envelope.glb
+          git diff --cached --quiet && exit 0
+          git commit -m "Add Shen268-aligned anatomical context surface"
+          git push
