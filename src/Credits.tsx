@@ -13,7 +13,7 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
       <p className="eyebrow">PROVENANCE · ATTRIBUTION · REUSE RIGHTS</p>
       <h1>Credits &amp; Licences</h1>
       <p>This explorer combines published neuroscience research, openly distributed data, an atlas-derived anatomical surface, original visualisation code, and open-source software. Scientific credit and legal reuse permissions are documented separately.</p>
-      <div className="credits-alert" role="note"><strong>Rights still to verify:</strong> The exact Shen268 atlas NIfTI’s redistribution terms and the correct original-software copyright holder have not been independently confirmed. The project’s noncommercial software licence does not override third-party rights.</div>
+      <div className="credits-alert" role="note"><strong>Rights still to verify:</strong> The exact Shen268 atlas NIfTI’s redistribution terms have not been independently confirmed. Honnett Ltd’s noncommercial software licence does not override third-party rights.</div>
     </div>
 
     <section className="credit-section" aria-labelledby="credit-code">
@@ -23,9 +23,12 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
         <p>The original application and processing code in this repository is published under PolyForm Noncommercial 1.0.0, subject to the copyright holder having authority to grant these rights. The licence permits personal, educational, research and other specified noncommercial uses, changes, and permitted redistribution, provided its terms and required notices accompany copies.</p>
         <p><strong>Commercial use:</strong> Commercial uses beyond the licence's exceptions require a separate licence from the person or entity holding the relevant software copyright. A public GitHub repository does not itself grant commercial permission.</p>
         <p><strong>What this does not cover:</strong> Independently licensed React/Three.js dependencies, YaleNeuroConnect data, Shen268 atlas materials, the derived brain mesh, and any future third-party 3D models retain their own terms. This is source-available, not OSI-approved open-source software.</p>
-        <p className="credit-caution"><strong>Ownership check:</strong> The original-code rights holder has not yet been identified in a required copyright notice. Confirm whether the rights belong to the individual developer, their employer, or another entity before finalising the notice and any commercial licensing arrangements.</p>
+        <p><strong>Copyright holder:</strong> Honnett Ltd. Required notice: <code>Copyright (c) 2026 Honnett Ltd.</code></p>
+        <p><strong>Trademark:</strong> Tweenbrain is a trademark of Honnett Ltd. The software licence does not grant a right to use the trademark to suggest endorsement. No claim of registered-trademark status is made.</p>
+        <p>These notices must accompany copies and permitted adaptations of the original software, together with the licence text or its official URL.</p>
         <div className="credit-links">
           <a href={softwareLicense} target="_blank" rel="noreferrer">Full software licence text ↗</a>
+          <a href={import.meta.env.BASE_URL+"legal/notice.txt"} target="_blank" rel="noreferrer">Honnett Ltd copyright &amp; trademark notice ↗</a>
           <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noreferrer">Official PolyForm licence ↗</a>
           <a href="https://github.com/mp-honnett/brain-connectome-explorer/blob/main/LICENSING.md" target="_blank" rel="noreferrer">Scope and third-party exceptions ↗</a>
         </div>
@@ -74,7 +77,7 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
         <div className="credit-entry-head"><h3>Transparent outer head</h3><span className="credit-status">Original procedural geometry</span></div>
         <p>Generated programmatically inside this project's <code>src/HeadShell.tsx</code>. It is an illustrative generic head, not a downloaded CT scan, a subject-specific medical reconstruction, or a claim of medical precision.</p>
         <p><strong>External 3D-model credit:</strong> None for the current outer head mesh. The Shen268-derived brain envelope is credited separately above.</p>
-        <p><strong>Project code licence:</strong> PolyForm Noncommercial 1.0.0 applies to original procedural geometry and app code, subject to the confirmed rights holder; see the software licence section above.</p>
+        <p><strong>Project code licence:</strong> PolyForm Noncommercial 1.0.0 applies to original procedural geometry and app code owned by Honnett Ltd; see the software licence section above.</p>
       </div>
       <div className="credit-entry">
         <div className="credit-entry-head"><h3>Possible future Sketchfab / Thingiverse skull</h3><span className="credit-status needs-review">Not included</span></div>
@@ -101,7 +104,7 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
       <div className="credit-entry">
         <p>Connections are fMRI functional correlations, not physical nerve fibres, anatomical tract reconstructions or demonstrations of causation. The current example is a single-participant educational visualisation, and the exact atlas-to-matrix index matching remains provisional.</p>
         <p>References to external research do not imply endorsement by Yale University, OpenNeuro, the atlas authors, or any third-party asset creator.</p>
-        <p>The credits inventory should be reviewed every time research data, a mesh, a font, a library, or another external asset is added. The project's original software licence has been selected as PolyForm Noncommercial 1.0.0, but the rights holder must still be identified; the atlas's file-level reuse terms also need independent confirmation.</p>
+        <p>The credits inventory should be reviewed every time research data, a mesh, a font, a library, or another external asset is added. Honnett Ltd is identified as the copyright holder of the original software under PolyForm Noncommercial 1.0.0; Tweenbrain is identified as its trademark. The atlas's file-level reuse terms still need independent confirmation.</p>
         <div className="credit-links">
           <a href="https://github.com/mp-honnett/brain-connectome-explorer/blob/main/CREDITS.md" target="_blank" rel="noreferrer">Repository attribution register ↗</a>
         </div>
