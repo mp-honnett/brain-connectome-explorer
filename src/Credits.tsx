@@ -21,6 +21,8 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
         <div className="credit-entry-head"><h3>YaleNeuroConnect / OpenNeuro ds007286</h3><span className="credit-status">CC0 reported</span></div>
         <p>Functional connectivity matrices for rest and an n-back working-memory task, derived from one anonymised participant's session. This visualisation does not represent an average across participants.</p>
         <p><strong>Provider / credit:</strong> Yale Magnetic Resonance Research Center / YaleNeuroConnect contributors; distributed through OpenNeuro.</p>
+        <p><strong>Scientific paper:</strong> Samardzija, A., Shen, X., Greene, A. S., et al. (2026), <em>A Transdiagnostic fMRI Dataset With 400+ Deeply Phenotyped Participants Across Resting and Task States.</em> Scientific Data, DOI: 10.1038/s41597-026-08749-0.</p>
+        <p><strong>Different rights for the paper:</strong> The journal article is CC BY-NC-ND 4.0, which is separate from the OpenNeuro dataset’s reported CC0 status. This app links to the paper but does not reproduce or adapt its text or figures.</p>
         <p><strong>Reported dataset licence:</strong> Creative Commons CC0 1.0 Universal, per dataset metadata reported for OpenNeuro ds007286. Confirm the licence for the version and derivative actually reused.</p>
         <p><strong>Changes in this application:</strong> Source matrices are converted from Fisher z to Pearson correlation r using tanh; the sample is reduced to a browser-viewable JSON file. Region-to-matrix index correspondence is still provisional.</p>
         {metadata?.source&&<p><strong>Loaded data source:</strong> {metadata.source}</p>}
