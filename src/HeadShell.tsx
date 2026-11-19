@@ -2,12 +2,9 @@ import { useMemo } from "react";
 import * as THREE from "three";
 
 /**
- * A generic, smoothly parameterised head shell in MNI-like millimetre space.
- * This is an ILLUSTRATIVE reference shape, not an MRI scalp segmentation.
- *
- * Coordinate mapping matches Scene.tsx and the Shen268 anatomical envelope:
- *   x = left/right, y = superior/inferior, z = posterior/anterior reversed.
- * The frontal face / nose protrudes towards MNI +Y (scene -Z).
+ * Illustrative, MNI-oriented head context surface (not an individual MRI).
+ * MNI coordinates are in millimetres: +Y anterior, +Z superior.
+ * Keep exactly the same transform as src/Scene.tsx.
  */
 const SCALE = 0.052;
 const inScene = (x:number,y:number,z:number):[number,number,number] =>
@@ -19,71 +16,99 @@ type HeadProps = {
   wireframe:boolean;
 };
 
-const profile:[number,number,number,number][] = [
-  // MNI Z mm, left/right radius, front/back radius, front/back centre
-  [-120, 0, 0, 64],
-  [-110, 23, 26, 65],
-  [-95, 42, 51, 51],
-  [-75, 60, 74, 26],
-  [-50, 75, 90, 7],
-  [-24, 86, 102, -1],
-  [5, 94, 111, -3],
-  [35, 97, 109, -7],
-  [65, 88, 98, -10],
-  [92, 66, 76, -11],
-  [110, 37, 43, -10],
-  [122, 0, 0, -10]
+// z level, left/right half-width, anterior/posterior half-depth, depth offset.
+// Unlike the initial egg-shaped mesh, the lower rings form a jaw and neck.
+// Their front extent sits behind the chin, rather than meeting at a sharp tip.
+const profile:ReadonlyArray<readonly [number,number,number,number]> = [
+  [-137,36,38,-17],
+  [-126,39,43,-16],
+  [-115,42,45,-10],
+  [-105,47,51,-4],
+  [-96,52,61,4],
+  [-86,59,74,7],
+  [-73,68,85,5],
+  [-55,79,99,0],
+  [-34,86,107,-4],
+  [-9,90,110,-6],
+  [18,94,113,-8],
+  [47,92,108,-10],
+  [76,82,100,-11],
+  [99,60,79,-10],
+  [115,34,47,-8],
+  [125,0,0,-8]
 ];
 
-function smoothProfile(z:number):[number,number,number] {
+function smoothProfile(z:number):[number,number,number]{
   let i=0;
-  while(i<profile.length-2 && z>profile[i+1][0]) i++;
-  const a=profile[i],b=profile[i+1];
-  const u=THREE.MathUtils.clamp((z-a[0])/(b[0]-a[0]),0,1);
-  const t=u*u*(3-2*u);
-  return [
-    THREE.MathUtils.lerp(a[1],b[1],t),
-    THREE.MathUtils.lerp(a[2],b[2],t),
-    THREE.MathUtils.lerp(a[3],b[3],t)
-  ];
+  while(i<profile.length-2&&z>profile[i+1][0])i++;
+  const a=profile[i],b=profile[i+1],span=b[0]-a[0];
+  const u=THREE.MathUtils.clamp((z-a[0])/span,0,1);
+  const u2=u*u,u3=u2*u;
+  const h00=2*u3-3*u2+1,h10=u3-2*u2+u,h01=-2*u3+3*u2,h11=u3-u2;
+  const prev=profile[Math.max(0,i-1)];
+  const next=profile[Math.min(profile.length-1,i+2)];
+  const result:[number,number,number]=[0,0,0];
+  for(let k=1;k<=3;k++){
+    const m0=i===0?0:(b[k]-prev[k])/(b[0]-prev[0]);
+    const m1=i===profile.length-2?0:(next[k]-a[k])/(next[0]-a[0]);
+    result[k-1]=h00*a[k]+h10*span*m0+h01*b[k]+h11*span*m1;
+  }
+  result[0]=Math.max(0,result[0]);
+  result[1]=Math.max(0,result[1]);
+  return result;
 }
 
-function makeHeadGeometry(){
-  const rings=100;
-  const segments=112;
+const gaussian=(v:number,width:number)=>Math.exp(-0.5*(v/width)**2);
+
+function makeHeadGeometry():THREE.BufferGeometry {
+  const rows=148,segments=144;
   const positions:number[]=[];
   const indices:number[]=[];
-
-  for(let row=0;row<=rings;row++){
-    const z=-120+242*row/rings;
+  for(let row=0;row<=rows;row++){
+    const z=-137+(125+137)*row/rows;
     const [radiusX,radiusY,offsetY]=smoothProfile(z);
     for(let col=0;col<=segments;col++){
-      const angle=2*Math.PI*col/segments;
-      const signedAngle=Math.atan2(Math.sin(angle),Math.cos(angle));
-      const gaussian=(distance:number,sigma:number)=>
-        Math.exp(-0.5*(distance/sigma)**2);
+      const theta=2*Math.PI*col/segments;
+      const frontAngle=Math.atan2(Math.sin(theta),Math.cos(theta));
+      const absAngle=Math.abs(frontAngle);
+      const front=gaussian(frontAngle,.5);
 
-      // A gentle brow ridge, paired eye hollows, cheekbones, and a central nose.
-      // These features provide orientation without suggesting subject-specific anatomy.
-      const nose=27*gaussian(signedAngle,.16)*gaussian(z+27,24);
-      const noseBridge=9*gaussian(signedAngle,.14)*gaussian(z-7,24);
-      const brows=4*gaussian(Math.abs(signedAngle)-.31,.12)*gaussian(z-24,11);
-      const eyes=-4*gaussian(Math.abs(signedAngle)-.34,.13)*gaussian(z-2,15);
-      const cheeks=4*gaussian(Math.abs(signedAngle)-.43,.17)*gaussian(z+40,23);
-      const x=radiusX*Math.sin(angle);
-      const y=offsetY+radiusY*Math.cos(angle)+nose+noseBridge+brows+eyes+cheeks;
+      // Nose: a narrow bridge blended into a restrained rounded tip,
+      // with subtle alar (nostril-side) contour. No single giant "beak" bump.
+      const bridge=11*gaussian(frontAngle,.13)*gaussian(z-3,26);
+      const tip=20*gaussian(frontAngle,.16)*gaussian(z+32,11);
+      const nostrils=3.0*gaussian(absAngle-.17,.07)*gaussian(z+40,8);
+      const subnasal=-3.5*gaussian(frontAngle,.25)*gaussian(z+47,6);
+
+      // Eyes, brows and cheekbones are soft surface deformations rather
+      // than separate geometric spheres or sharp ridges.
+      const eyeSockets=-6*gaussian(absAngle-.27,.13)*gaussian(z+1,17);
+      const brows=3.5*gaussian(absAngle-.29,.12)*gaussian(z-20,11);
+      const cheeks=3.5*gaussian(absAngle-.39,.2)*gaussian(z+49,21);
+
+      // Chin is broad/rounded and merges into a sloping lower jaw and neck.
+      // Minor lip/philtrum shaping keeps the mouth from reading as a cone.
+      const philtrum=-2*gaussian(frontAngle,.21)*gaussian(z+55,5);
+      const upperLip=2.2*gaussian(frontAngle,.24)*gaussian(z+63,5);
+      const lowerLip=2.5*gaussian(frontAngle,.25)*gaussian(z+72,5);
+      const underLip=-2.2*gaussian(frontAngle,.28)*gaussian(z+79,5);
+      const chin=17*gaussian(frontAngle,.36)*gaussian(z+94,16);
+
+      const jawNarrowing=.13*front*gaussian(z+91,23);
+      const x=radiusX*Math.sin(theta)*(1-jawNarrowing);
+      const y=offsetY+radiusY*Math.cos(theta)
+        +bridge+tip+nostrils+subnasal
+        +eyeSockets+brows+cheeks
+        +philtrum+upperLip+lowerLip+underLip+chin;
       positions.push(...inScene(x,y,z));
     }
   }
-
-  for(let row=0;row<rings;row++){
+  for(let row=0;row<rows;row++){
     for(let col=0;col<segments;col++){
-      const a=row*(segments+1)+col;
-      const b=a+segments+1;
+      const a=row*(segments+1)+col,b=a+segments+1;
       indices.push(a,b,a+1,b,b+1,a+1);
     }
   }
-
   const geometry=new THREE.BufferGeometry();
   geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
   geometry.setIndex(indices);
@@ -93,16 +118,15 @@ function makeHeadGeometry(){
 
 export default function HeadShell({center,opacity,wireframe}:HeadProps){
   const geometry=useMemo(()=>makeHeadGeometry(),[]);
-  const ears=useMemo(()=>[-1,1].map(side=>{
-    const [x,y,z]=inScene(side*99,-14,-26);
-    return [x,y,z] as [number,number,number];
-  }),[]);
+  const ears=useMemo(()=>[-1,1].map(side=>
+    inScene(side*91,-21,-25)
+  ),[]);
   return <group position={[-center.x,-center.y,-center.z]}>
     <mesh geometry={geometry} renderOrder={0}>
       <meshPhongMaterial
         color="#a8d9e4"
         specular="#89d9ed"
-        shininess={42}
+        shininess={30}
         transparent
         opacity={opacity}
         depthWrite={false}
@@ -110,8 +134,8 @@ export default function HeadShell({center,opacity,wireframe}:HeadProps){
         wireframe={wireframe}
       />
     </mesh>
-    {ears.map((pos,i)=><mesh key={i} position={pos} scale={[.24,.36,.14]} renderOrder={0}>
-      <sphereGeometry args={[1,20,16]}/>
+    {ears.map((pos,i)=><mesh key={i} position={pos} scale={[.42,.86,.32]} renderOrder={0}>
+      <sphereGeometry args={[1,28,22]}/>
       <meshPhongMaterial color="#a8d9e4" transparent opacity={opacity} depthWrite={false} wireframe={wireframe} side={THREE.DoubleSide}/>
     </mesh>)}
   </group>;
