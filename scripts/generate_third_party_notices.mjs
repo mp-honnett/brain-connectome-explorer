@@ -19,8 +19,9 @@ const parts=[
   "Automatically generated during the website build from npm's installed package tree.",
   "Packages can carry different copyright and licensing obligations.",
   "This file reproduces discovered package-level licence/NOTICE texts where present.",
-  "Review the actual upstream terms before redistribution. No licence is implied for",
-  "this explorer's original code, its research data or anatomical assets.",
+  "Review actual upstream terms before redistribution. This inventory does not",
+  "change the PolyForm Noncommercial licence for Honnett Ltd original code",
+  "or the separate rights in research data, anatomical assets and trademarks.",
   "See /#credits and CREDITS.md for science and 3D model attribution.",
   ""
 ];
@@ -71,4 +72,11 @@ if(!fs.existsSync(softwareLicence)){
 const deployedSoftwareLicence=path.join(root,"dist","legal","software-license.md");
 fs.copyFileSync(softwareLicence,deployedSoftwareLicence);
 console.log("Published original software licence at "+deployedSoftwareLicence);
+const noticeSource=path.join(root,"NOTICE.txt");
+if(!fs.existsSync(noticeSource)){
+  throw new Error("Required copyright and trademark notice missing: "+noticeSource);
+}
+const deployedNotice=path.join(root,"dist","legal","notice.txt");
+fs.copyFileSync(noticeSource,deployedNotice);
+console.log("Published required copyright and trademark notices at "+deployedNotice);
 console.log("Wrote "+output+" ("+included+" installed packages, "+missing+" missing standalone notice files)");
