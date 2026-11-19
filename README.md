@@ -2,7 +2,7 @@
 
 Interactive Three.js functional connectome explorer intended for verified YaleNeuroConnect (OpenNeuro ds007286) Shen268 connectivity measurements.
 
-**Data status:** No Yale matrices are bundled. The app presents an explicit import state and never fabricates neuroscience measurements.
+**Data status:** The app bundles a **provisional, real single-participant** YaleNeuroConnect sample in `public/data/connectome.json` (rest and n-back). The exact atlas parcel ID to matrix row correspondence has not been independently validated. Importing a different validated JSON is also supported. No synthetic neuroscience measurements are presented as real.
 
 ## Run
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-To use, import a processed JSON file containing `nodes`, `conditions` and `metadata` (see `src/types.ts`). Atlas parcel IDs and matrix row order must be independently verified before presenting it as scientific output.
+The bundled sample loads automatically. To compare other data, import a processed JSON file containing `nodes`, `conditions` and `metadata` (see `src/types.ts`). Atlas parcel IDs and matrix row order must be independently verified before presenting it as scientific output.
 
 ## Publish
 
@@ -28,3 +28,11 @@ The viewer now supports an independently toggled translucent, atlas-registered b
 ## Head context layer
 
 The optional **transparent human head** is a lightweight parametric, generic shape generated at runtime (`src/HeadShell.tsx`). It is positioned in the same MNI-like coordinate frame as the atlas-derived brain envelope and parcels. It includes simplified facial landmarks to orient rostral/caudal views; it is **not** a patient-specific scalp scan, anatomical segmentation or ground-truth cranial surface. The sidebar offers visibility, opacity and wireframe controls. Brain surfaces and connectivity are separate, independently controllable layers.
+
+## Credits, licences and rights checks
+
+The public viewer has a [Credits & Licences tab](https://mp-honnett.github.io/brain-connectome-explorer/#credits) listing research sources, source data permissions, atlas attribution, current 3D geometry, pending rights checks, and software libraries. [CREDITS.md](CREDITS.md) maintains the more detailed record.
+
+The GitHub Pages build also creates [`/legal/third-party-notices.txt`](https://mp-honnett.github.io/brain-connectome-explorer/legal/third-party-notices.txt), an inventory of installed npm packages and the licence/NOTICE texts included with those packages. Verify upstream terms if any notices are missing.
+
+**Outstanding items:** The reuse licence for the exact Shen268 atlas NIfTI needs authoritative confirmation. The repository's original code does not yet have a chosen open-source licence. No external Sketchfab or Thingiverse skull model has been incorporated.
