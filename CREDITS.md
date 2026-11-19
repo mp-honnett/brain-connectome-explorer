@@ -32,6 +32,15 @@ This register lists the content **actually incorporated** into Brain Connectome 
 - **Derivative used:** `public/assets/brain-envelope.glb`, a smoothed 3D exterior reconstructed from the labelled atlas using `scripts/prepare_brain_envelope.py`. Node centres are also computed from this atlas.
 - **Rights review required:** An explicit file-level or repository-level reuse licence for the exact distributed atlas NIfTI has **not yet been independently verified**. A public GitHub repository and a publication citation do not automatically grant redistribution rights. Confirm with the rightsholder or identify authoritative upstream terms, then update this section with the permission or licence record. Be prepared to replace the distributed asset if rights cannot be confirmed.
 
+## 2a. Lobe orientation colours — in use; original schematic teaching overlay
+
+- **Purpose:** Visual orientation and teaching, not anatomical parcel classification or scientific measurement.
+- **Origin:** Original Honnett Ltd Tweenbrain design convention (`src/lobePalette.ts`) and transparent illustrative lobe volumes (`src/LobeOverlay.tsx`). These are not a standard neurological colour code.
+- **Palette:** frontal `#E8A24B`; parietal `#55B8E7`; temporal `#B598EC`; occipital `#61CDA7`; insula `#EB91A0`; mixed/unclassified `#8793A3`.
+- **Anatomical method:** Hand-chosen approximate bilateral positions and simple ellipsoidal shapes in MNI-like scene coordinates. The shapes are **not** voxel-validated anatomical segmentations, sulcal or gyral outlines, subject MRI, or a registered reference atlas. Selection highlights these schematic guides only.
+- **Shen268 caveat:** There is **no verified parcel-to-lobe crosswalk** in the bundled data. Parcel markers remain styled by the connectivity explorer; individual parcels are not assigned to lobes. A future data-driven classification requires an appropriately licensed anatomy atlas, spatial registration, overlaps and quality control, including a mixed/unclassified outcome.
+- **Rights:** Original software visuals and code owned by Honnett Ltd under [PolyForm Noncommercial 1.0.0](LICENSE.md); atlas-derived underlying assets and research data retain their separate status.
+
 ## 3. 3D outer head — in use; original procedural geometry
 
 - **Source:** `src/HeadShell.tsx`, developed for this app using procedural geometric primitives. Not a third-party CT or scalp scan.
