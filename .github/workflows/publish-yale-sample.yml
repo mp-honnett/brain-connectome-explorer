@@ -1,6 +1,9 @@
 name: Publish verified-format Yale sample
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/publish-yale-sample.yml
 permissions:
   contents: write
 jobs:
