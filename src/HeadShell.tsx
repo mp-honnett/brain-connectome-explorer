@@ -69,7 +69,7 @@ function makeHeadGeometry():THREE.BufferGeometry {
   const positions:number[]=[];
   const indices:number[]=[];
   for(let row=0;row<=rows;row++){
-    const z=-137+(125+137)*row/rows;
+    const z=profile[0][0]+(profile[profile.length-1][0]-profile[0][0])*row/rows;
     const [radiusX,radiusY,offsetY]=smoothProfile(z);
     for(let col=0;col<=segments;col++){
       const theta=2*Math.PI*col/segments;
