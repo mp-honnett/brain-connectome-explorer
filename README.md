@@ -37,4 +37,6 @@ The GitHub Pages build also creates [`/legal/third-party-notices.txt`](https://m
 
 **Software licence:** The original software is offered under the [PolyForm Noncommercial License 1.0.0](LICENSE.md) ([scope and exceptions](LICENSING.md)). This allows specified personal, educational, public research and other permitted noncommercial uses but does not grant general commercial rights. It is **source-available, not OSI-approved open source**. External datasets, atlas meshes and software dependencies retain their own permissions.
 
-**Outstanding items:** The reuse licence for the exact Shen268 atlas NIfTI needs authoritative confirmation, and the correct copyright holder for the original project code must be identified for the required attribution notice. No external Sketchfab or Thingiverse skull model has been incorporated.
+**Copyright & trademarks:** Copyright (c) 2026 Honnett Ltd. Tweenbrain is a trademark of Honnett Ltd. See the required [NOTICE.txt](NOTICE.txt) and [licensing scope](LICENSING.md). The software licence does not grant independent rights to use the Honnett Ltd or Tweenbrain marks.
+
+**Outstanding items:** The reuse licence for the exact Shen268 atlas NIfTI needs authoritative confirmation. No external Sketchfab or Thingiverse skull model has been incorporated.
