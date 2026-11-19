@@ -1,6 +1,7 @@
 import {useEffect,useMemo,useRef,useState} from "react";
 import Scene, {type LayerSettings,type CameraSnap,type ViewDirection} from "./Scene";
 import Credits from "./Credits";
+import { LOBES, UNCLASSIFIED_LOBE } from "./lobePalette";
 import {type Dataset,validateData,edgesForNode} from "./types";
 export default function App(){
  const [tab,setTab]=useState<"explore"|"credits">(()=>typeof window!=="undefined"&&window.location.hash==="#credits"?"credits":"explore");
@@ -18,7 +19,7 @@ export default function App(){
  const [limit,setLimit]=useState(16);
  const [snap,setSnap]=useState<CameraSnap>({direction:"caudal",serial:0});
  const chooseView=(direction:ViewDirection)=>setSnap(prev=>({direction,serial:prev.serial+1}));
- const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.16,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22});
+ const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.16,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all"});
  const updateLayer=(part:Partial<LayerSettings>)=>setLayers(previous=>({...previous,...part}));
  const fileInput=useRef<HTMLInputElement>(null);
  const importData=(value:unknown)=>{const d=validateData(value);setData(d);setCondition(Object.keys(d.conditions)[0]);setSelected(0);setError("");};
@@ -33,10 +34,10 @@ export default function App(){
  <div className="note"><b>Interpretation</b><p>Connections show correlation between measured fMRI time series, not physical fibre tracts or causal communication. Display thresholds are not statistical significance tests.</p></div></section>
  <aside><div className="panel"><p className="eyebrow">CAMERA VIEWS</p>
  <div className="view-buttons">
- {([["rostral","Rostral · Front"],["caudal","Caudal · Back"],["top","Dorsal · Top"],["bottom","Ventral · Bottom"]] as const).map(([direction,label])=>
+ {([["rostral","Rostral · Front"],["caudal","Caudal · Back"],["top","Dorsal · Top"],["bottom","Ventral · Bottom"],["left-lateral","Left Lateral · Left Side"],["right-lateral","Right Lateral · Right Side"]] as const).map(([direction,label])=>
  <button key={direction} type="button" className={snap.direction===direction?"view-button active":"view-button"} onClick={()=>chooseView(direction)} aria-label={label} aria-pressed={snap.direction===direction}>{label}</button>)}
  </div>
- <p className="muted">Snap to a standard anatomical direction, then drag to rotate freely. Front and back refer to the brain's anatomical axes.</p></div>
+ <p className="muted">Snap to a standard anatomical direction, then drag to rotate freely. Left and right lateral views are from the subject's left and right, respectively.</p></div>
  <div className="panel"><p className="eyebrow">ANATOMICAL LAYERS</p>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.head} onChange={e=>updateLayer({head:e.target.checked})}/> Transparent human head</span></label>
  <label>Head opacity <b>{Math.round(layers.headOpacity*100)}%</b></label>
@@ -50,6 +51,22 @@ export default function App(){
  <label>Brain transparency <b>{Math.round((1-layers.opacity)*100)}%</b></label>
  <input type="range" min="0.05" max="0.8" step="0.05" disabled={!layers.anatomy} value={layers.opacity} onChange={e=>updateLayer({opacity:Number(e.target.value)})}/>
  <p className="muted">The translucent surface is a smoothed outline derived from the Shen268 atlas, not a detailed subject MRI. The connecting lines are statistical fMRI relationships, not axon pathways.</p></div>
+ <div className="panel lobe-panel">
+ <p className="eyebrow">ANATOMY GUIDE · SCHEMATIC</p>
+ <label className="layer-toggle"><span><input type="checkbox" checked={layers.lobeGuides} onChange={e=>updateLayer({lobeGuides:e.target.checked})}/> Show coloured lobe guides</span></label>
+ <p className="muted">Rounded coloured volumes illustrate approximate lobe locations in both hemispheres. They are not measured lobe boundaries, cortical sulci, or atlas-verified Shen268 classifications.</p>
+ <div className="lobe-legend" role="group" aria-label="Select a lobe to highlight">
+  <button type="button" disabled={!layers.lobeGuides} className={layers.lobeSelection==="all"?"lobe-choice active":"lobe-choice"} aria-pressed={layers.lobeSelection==="all"} onClick={()=>updateLayer({lobeSelection:"all"})}>
+    <span className="lobe-swatch all-swatches" aria-hidden="true">●</span><span>All lobes</span>
+  </button>
+  {LOBES.map(lobe=><button type="button" key={lobe.id} disabled={!layers.lobeGuides} className={layers.lobeSelection===lobe.id?"lobe-choice active":"lobe-choice"} aria-pressed={layers.lobeSelection===lobe.id} onClick={()=>updateLayer({lobeSelection:lobe.id})}>
+    <span className="lobe-swatch" style={{backgroundColor:lobe.color}} aria-hidden="true"/><span>{lobe.name}</span>
+  </button>)}
+  <div className="lobe-key-unclassified"><span className="lobe-swatch" style={{backgroundColor:UNCLASSIFIED_LOBE.color}} aria-hidden="true"/><span>{UNCLASSIFIED_LOBE.name}</span></div>
+ </div>
+ {layers.lobeSelection!=="all"&&<p className="muted lobe-description"><strong>{LOBES.find(l=>l.id===layers.lobeSelection)?.name}:</strong> {LOBES.find(l=>l.id===layers.lobeSelection)?.description}</p>}
+ <p className="muted lobe-disclaimer">Tweenbrain visualisation palette, not standard neurological colour coding. Shen268 parcels remain unclassified pending a verified anatomical atlas mapping. Click a coloured legend item to highlight its bilateral guides.</p>
+ </div>
  <div className="panel"><p className="eyebrow">CONDITIONS</p><label>Condition</label><select disabled={!data} value={condition} onChange={e=>setCondition(e.target.value)}>{Object.keys(data?.conditions||{}).map(k=><option value={k} key={k}>{k}</option>)}</select><label>Minimum absolute correlation <b>{threshold.toFixed(2)}</b></label><input type="range" min="0" max=".9" step=".05" value={threshold} onChange={e=>setThreshold(+e.target.value)}/><label>Maximum visible connections <b>{limit}</b></label><input type="range" min="5" max="40" value={limit} onChange={e=>setLimit(+e.target.value)}/><p className="muted">Showing {edges.length} connections from the selected region.</p></div>
  <div className="panel"><p className="eyebrow">REGION INSPECTOR</p><label>Selected region</label><select disabled={!data} value={selected} onChange={e=>setSelected(+e.target.value)}>{(data?.nodes||[]).map((n,i)=><option key={n.id} value={i}>{n.label}</option>)}</select><h2>{data?.nodes[selected]?.label||"No region selected"}</h2><p className="muted">{data?.nodes[selected]? "Atlas ID "+data.nodes[selected].id+" · "+data.nodes[selected].position_mm.map(x=>x.toFixed(1)).join(", ")+" mm":"Select a node after loading data."}</p>{edges.slice(0,8).map(e=><div className="connection" key={e.target}><span>{data?.nodes[e.target].label}</span><b className={e.value>=0?"positive":"negative"}>{e.value>=0?"+":""}{e.value.toFixed(3)}</b></div>)}</div>
  <div className="panel"><p className="eyebrow">DATA PROVENANCE</p><p>{data?.metadata.source||"YaleNeuroConnect (intended source)"}</p><p className="muted">{data?data.metadata.dataType+" · "+data.metadata.transform:"No source matrices have been installed or independently verified."}</p>{data?.metadata.note&&<p className="error">{data.metadata.note}</p>}<button className="secondary" onClick={()=>fileInput.current?.click()}>Import / replace JSON</button><input hidden type="file" accept=".json,application/json" ref={fileInput} onChange={e=>importFile(e.target.files?.[0])}/>{error&&<p className="error">{error}</p>}</div></aside></>}</main>
