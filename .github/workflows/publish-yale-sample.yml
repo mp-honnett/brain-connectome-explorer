@@ -1,0 +1,26 @@
+name: Publish verified-format Yale sample
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy nibabel
+      - name: Download, parse, and validate Yale sample
+        run: python scripts/prepare_yale_sample.py
+      - name: Commit small derived connectome JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/connectome.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish real Yale example connectome (provisional mapping)"
+          git push
