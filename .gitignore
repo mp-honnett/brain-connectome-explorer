@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.venv/
+data/raw/
+data/processed/
+.DS_Store
