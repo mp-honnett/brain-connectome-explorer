@@ -18,6 +18,21 @@ jobs:
         run: pip install numpy nibabel scipy scikit-image trimesh
       - name: Generate atlas-registered glTF brain surface
         run: python scripts/prepare_brain_envelope.py
+      - name: Inspect atlas surface bounds for head fitting
+        run: |
+          python - <<'PY'
+          import trimesh, numpy as np
+          scene = trimesh.load("public/assets/brain-envelope.glb", force="scene")
+          v = np.concatenate([mesh.vertices for mesh in scene.geometry.values()])
+          xyz = np.column_stack([v[:,0]/.052,-v[:,2]/.052,v[:,1]/.052])
+          print("Brain envelope bounds MNI mm:")
+          for i,k in enumerate(("left-right x","front-back y","inferior-superior z")):
+              print(k, "min", round(xyz[:,i].min(),1), "max",round(xyz[:,i].max(),1))
+          for low,high in [(-110,-70),(-70,-40),(-40,-10),(-10,25),(25,60),(60,95),(95,125)]:
+              p = xyz[(xyz[:,2]>=low)&(xyz[:,2]<high)]
+              if len(p):
+                  print("z",low,high,"n",len(p),"x-ext",np.round([p[:,0].min(),p[:,0].max()],1),"y-ext",np.round([p[:,1].min(),p[:,1].max()],1))
+          PY
       - name: Commit rendered surface
         run: |
           git config user.name "github-actions[bot]"
