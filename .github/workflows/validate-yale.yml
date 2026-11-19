@@ -30,7 +30,7 @@ jobs:
               print('\n---',fn,'---')
               with open('data/raw/'+fn+'.tsv') as f:
                   for _ in range(2): print('Sample:',f.readline()[:180])
-              a=np.loadtxt((line.rstrip('\\t\\r\\n') for line in open('data/raw/'+fn+'.tsv')),delimiter='\\t')
+              a=np.loadtxt((line.rstrip() for line in open('data/raw/'+fn+'.tsv')),delimiter='\\t')
               print('Shape',a.shape,'range',np.nanmin(a),np.nanmax(a),'symmetry',np.max(np.abs(a-a.T)) if a.ndim==2 and a.shape[0]==a.shape[1] else 'n/a','finite',np.isfinite(a).all())
           img=nib.load('data/raw/shen.nii')
           labels=np.unique(np.asanyarray(img.dataobj))
