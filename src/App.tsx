@@ -25,7 +25,7 @@ export default function App(){
  <div className="note"><b>Interpretation</b><p>Connections show correlation between measured fMRI time series, not physical fibre tracts or causal communication. Display thresholds are not statistical significance tests.</p></div></section>
  <aside><div className="panel"><p className="eyebrow">CAMERA VIEWS</p>
  <div className="view-buttons">
- {([["rostral","Rostral · Front"],["caudal","Caudal · Back"],["top","Top · Superior"],["bottom","Bottom · Inferior"]] as const).map(([direction,label])=>
+ {([["rostral","Rostral · Front"],["caudal","Caudal · Back"],["top","Dorsal · Top"],["bottom","Ventral · Bottom"]] as const).map(([direction,label])=>
  <button key={direction} type="button" className={snap.direction===direction?"view-button active":"view-button"} onClick={()=>chooseView(direction)} aria-label={label} aria-pressed={snap.direction===direction}>{label}</button>)}
  </div>
  <p className="muted">Snap to a standard anatomical direction, then drag to rotate freely. Front and back refer to the brain's anatomical axes.</p></div>
