@@ -29,6 +29,23 @@ The viewer now supports an independently toggled translucent, atlas-registered b
 
 The optional **transparent human head** is a lightweight parametric, generic shape generated at runtime (`src/HeadShell.tsx`). It is positioned in the same MNI-like coordinate frame as the atlas-derived brain envelope and parcels. It includes simplified facial landmarks to orient rostral/caudal views; it is **not** a patient-specific scalp scan, anatomical segmentation or ground-truth cranial surface. The sidebar offers visibility, opacity and wireframe controls. Brain surfaces and connectivity are separate, independently controllable layers.
 
+## Anatomical camera presets and lobe guide
+
+The camera has six snap views: rostral (front), caudal (back), dorsal (top), ventral (bottom), **left lateral** and **right lateral**, using the subject's anatomical directions.
+
+The new **Anatomy guide · schematic** sidebar panel shows translucent bilateral lobe orientation volumes with a selectable Tweenbrain colour legend:
+
+| Lobe | Colour |
+| --- | --- |
+| Frontal | `#E8A24B` |
+| Parietal | `#55B8E7` |
+| Temporal | `#B598EC` |
+| Occipital | `#61CDA7` |
+| Insula | `#EB91A0` |
+| Mixed / unclassified | `#8793A3` |
+
+These are project visualisation colours, **not** a neurological colour standard. The guide volumes are approximate manual ellipsoids, **not** measured lobe boundaries or sulci. The Shen268 functional atlas is **not independently mapped to anatomical lobes**, so no parcel is presented as belonging to a lobe; the separate parcel/connection colours retain their existing meaning. An atlas-based crosswalk and a suitably licensed, registered cortical surface are needed before showing anatomical segmentations or true sulcal lines.
+
 ## Credits, licences and rights checks
 
 The public viewer has a [Credits & Licences tab](https://mp-honnett.github.io/brain-connectome-explorer/#credits) listing research sources, source data permissions, atlas attribution, current 3D geometry, pending rights checks, and software libraries. [CREDITS.md](CREDITS.md) maintains the more detailed record.
