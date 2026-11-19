@@ -1,4 +1,4 @@
-Required Notice: Copyright (c) 2026 Honnett Ltd.
+Required Notice: Copyright (c) 2026 Honnett Ltd. https://www.honnett.com
 Required Notice: Tweenbrain is a trademark of Honnett Ltd.
 
 Original Brain Connectome Explorer software is distributed under the
