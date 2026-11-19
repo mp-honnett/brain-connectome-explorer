@@ -63,4 +63,12 @@ for(const rel of packages){
 parts.splice(7,0,"Installed packages inventoried: "+included,"Packages missing readable top-level licence/NOTICE: "+missing);
 fs.mkdirSync(path.dirname(output),{recursive:true});
 fs.writeFileSync(output,parts.join("\n")+"\n","utf8");
+// Publish the unchanged first-party software licence alongside the JS bundle.
+const softwareLicence=path.join(root,"LICENSE.md");
+if(!fs.existsSync(softwareLicence)){
+  throw new Error("Original software licence missing: "+softwareLicence);
+}
+const deployedSoftwareLicence=path.join(root,"dist","legal","software-license.md");
+fs.copyFileSync(softwareLicence,deployedSoftwareLicence);
+console.log("Published original software licence at "+deployedSoftwareLicence);
 console.log("Wrote "+output+" ("+included+" installed packages, "+missing+" missing standalone notice files)");
