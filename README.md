@@ -35,4 +35,6 @@ The public viewer has a [Credits & Licences tab](https://mp-honnett.github.io/br
 
 The GitHub Pages build also creates [`/legal/third-party-notices.txt`](https://mp-honnett.github.io/brain-connectome-explorer/legal/third-party-notices.txt), an inventory of installed npm packages and the licence/NOTICE texts included with those packages. Verify upstream terms if any notices are missing.
 
-**Outstanding items:** The reuse licence for the exact Shen268 atlas NIfTI needs authoritative confirmation. The repository's original code does not yet have a chosen open-source licence. No external Sketchfab or Thingiverse skull model has been incorporated.
+**Software licence:** The original software is offered under the [PolyForm Noncommercial License 1.0.0](LICENSE.md) ([scope and exceptions](LICENSING.md)). This allows specified personal, educational, public research and other permitted noncommercial uses but does not grant general commercial rights. It is **source-available, not OSI-approved open source**. External datasets, atlas meshes and software dependencies retain their own permissions.
+
+**Outstanding items:** The reuse licence for the exact Shen268 atlas NIfTI needs authoritative confirmation, and the correct copyright holder for the original project code must be identified for the required attribution notice. No external Sketchfab or Thingiverse skull model has been incorporated.
