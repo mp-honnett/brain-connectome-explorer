@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useRef,useState} from "react";
-import Scene, {type LayerSettings} from "./Scene";
+import Scene, {type LayerSettings,type CameraSnap,type ViewDirection} from "./Scene";
 import {type Dataset,validateData,edgesForNode} from "./types";
 export default function App(){
  const [data,setData]=useState<Dataset|null>(null);
@@ -8,6 +8,8 @@ export default function App(){
  const [selected,setSelected]=useState(0);
  const [threshold,setThreshold]=useState(.3);
  const [limit,setLimit]=useState(16);
+ const [snap,setSnap]=useState<CameraSnap>({direction:"caudal",serial:0});
+ const chooseView=(direction:ViewDirection)=>setSnap(prev=>({direction,serial:prev.serial+1}));
  const [layers,setLayers]=useState<LayerSettings>({anatomy:true,parcels:true,connections:true,opacity:.22});
  const updateLayer=(part:Partial<LayerSettings>)=>setLayers(previous=>({...previous,...part}));
  const fileInput=useRef<HTMLInputElement>(null);
@@ -19,9 +21,15 @@ export default function App(){
  return <div className="app">
  <header><div><strong className="brand">BRAIN<span>CONNECT</span></strong><div className="caption">Functional network explorer</div></div><div className="header-right"><span>{data?"● Data loaded":"○ Awaiting verified data"}</span><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">YaleNeuroConnect ↗</a></div></header>
  <main><section className="visual"><div className="intro"><p className="eyebrow">INTERACTIVE CONNECTOME</p><h1>Explore the connected brain.</h1><p>Explore region-to-region functional correlations through a spatial 3D network.</p></div>
- <div className="stage">{data&&matrix?<Scene nodes={data.nodes} edges={edges} selected={selected} onSelect={setSelected} layers={layers}/>:<div className="empty"><div className="orb">◎</div><h2>Ready for real brain data</h2><p>YaleNeuroConnect measurements are not bundled. Import a validated connectome JSON to activate the 3D viewer. No synthetic connections are shown as real measurements.</p><button onClick={()=>fileInput.current?.click()}>Import connectome JSON</button><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">Explore source dataset ↗</a></div>}</div>
+ <div className="stage">{data&&matrix?<Scene nodes={data.nodes} edges={edges} selected={selected} onSelect={setSelected} layers={layers} snap={snap}/>:<div className="empty"><div className="orb">◎</div><h2>Ready for real brain data</h2><p>YaleNeuroConnect measurements are not bundled. Import a validated connectome JSON to activate the 3D viewer. No synthetic connections are shown as real measurements.</p><button onClick={()=>fileInput.current?.click()}>Import connectome JSON</button><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">Explore source dataset ↗</a></div>}</div>
  <div className="note"><b>Interpretation</b><p>Connections show correlation between measured fMRI time series, not physical fibre tracts or causal communication. Display thresholds are not statistical significance tests.</p></div></section>
- <aside><div className="panel"><p className="eyebrow">ANATOMICAL LAYERS</p>
+ <aside><div className="panel"><p className="eyebrow">CAMERA VIEWS</p>
+ <div className="view-buttons">
+ {([["rostral","Rostral · Front"],["caudal","Caudal · Back"],["top","Top · Superior"],["bottom","Bottom · Inferior"]] as const).map(([direction,label])=>
+ <button key={direction} type="button" className={snap.direction===direction?"view-button active":"view-button"} onClick={()=>chooseView(direction)} aria-label={label} aria-pressed={snap.direction===direction}>{label}</button>)}
+ </div>
+ <p className="muted">Snap to a standard anatomical direction, then drag to rotate freely. Front and back refer to the brain's anatomical axes.</p></div>
+ <div className="panel"><p className="eyebrow">ANATOMICAL LAYERS</p>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.anatomy} onChange={e=>updateLayer({anatomy:e.target.checked})}/> Brain atlas envelope</span></label>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.parcels} onChange={e=>updateLayer({parcels:e.target.checked})}/> Shen268 parcel centres</span></label>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.connections} onChange={e=>updateLayer({connections:e.target.checked})}/> Functional correlations</span></label>
