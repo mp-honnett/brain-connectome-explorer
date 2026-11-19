@@ -71,6 +71,17 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
       </div>
     </section>
 
+    <section className="credit-section" aria-labelledby="credit-lobes">
+      <h2 id="credit-lobes">Tweenbrain anatomical teaching palette</h2>
+      <div className="credit-entry">
+        <div className="credit-entry-head"><h3>Lobe colours &amp; schematic guide volumes</h3><span className="credit-status">Original visual design</span></div>
+        <p>The lobe colours are an original Tweenbrain design convention, not a universally accepted anatomical colour standard. The current transparent bilateral volumes are approximate educational orientation guides, not MRI-derived lobe segmentations, sulcal boundaries or clinically validated landmarks.</p>
+        <p><strong>Palette:</strong> frontal <code>#E8A24B</code>; parietal <code>#55B8E7</code>; temporal <code>#B598EC</code>; occipital <code>#61CDA7</code>; insula <code>#EB91A0</code>; mixed / unclassified <code>#8793A3</code>.</p>
+        <p className="credit-caution"><strong>Scientific limitation:</strong> No validated Shen268-to-anatomical-lobe lookup is supplied. Parcels and functional-correlation edges retain their existing connectivity styling; selecting a lobe highlights only the illustrative guide volumes, not a verified set of parcels. True lobe boundaries and sulci require a rights-cleared, spatially registered anatomical annotation atlas.</p>
+        <p><strong>Source:</strong> Original viewer code in <code>src/lobePalette.ts</code> and <code>src/LobeOverlay.tsx</code>, attributed to Honnett Ltd and covered by the project's PolyForm Noncommercial software terms.</p>
+      </div>
+    </section>
+
     <section className="credit-section" aria-labelledby="credit-models">
       <h2 id="credit-models">3D models &amp; visuals</h2>
       <div className="credit-entry">
