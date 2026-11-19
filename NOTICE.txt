@@ -1,0 +1,13 @@
+Required Notice: Copyright (c) 2026 Honnett Ltd.
+Required Notice: Tweenbrain is a trademark of Honnett Ltd.
+
+Original Brain Connectome Explorer software is distributed under the
+PolyForm Noncommercial License 1.0.0. See LICENSE.md and LICENSING.md.
+
+These notices concern Honnett Ltd's original software and its Tweenbrain
+trademark. No ownership of YaleNeuroConnect data, the Shen268 atlas, third-party
+packages, or externally authored 3D assets is claimed. Those works retain
+their separate licences and attribution requirements; see CREDITS.md.
+
+The software licence does not grant rights to use Honnett Ltd's trademarks
+or imply endorsement. This notice does not assert trademark registration.
