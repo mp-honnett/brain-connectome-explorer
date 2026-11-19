@@ -25,4 +25,6 @@ jobs:
           git add public/assets/brain-envelope.glb
           git diff --cached --quiet && exit 0
           git commit -m "Add Shen268-aligned anatomical context surface"
-          git push
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
