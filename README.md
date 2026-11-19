@@ -24,3 +24,7 @@ This is an educational software prototype; correlations are not physical tracts 
 ## Anatomical context layer
 
 The viewer now supports an independently toggled translucent, atlas-registered brain envelope, parcel-centre markers and functional-correlation lines. The mesh is reproducibly generated from the Shen268 label NIfTI by `scripts/prepare_brain_envelope.py` and stored at `public/assets/brain-envelope.glb`. It is a smoothed atlas outline, **not** a patient-specific anatomical MRI or a white-matter tract reconstruction. Change surface opacity in the sidebar to see internal nodes. Functional edges are correlations, **not** physical tracts.
+
+## Head context layer
+
+The optional **transparent human head** is a lightweight parametric, generic shape generated at runtime (`src/HeadShell.tsx`). It is positioned in the same MNI-like coordinate frame as the atlas-derived brain envelope and parcels. It includes simplified facial landmarks to orient rostral/caudal views; it is **not** a patient-specific scalp scan, anatomical segmentation or ground-truth cranial surface. The sidebar offers visibility, opacity and wireframe controls. Brain surfaces and connectivity are separate, independently controllable layers.
