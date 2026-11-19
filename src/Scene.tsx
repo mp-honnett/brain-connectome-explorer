@@ -1,10 +1,13 @@
-import { Canvas, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Html, Line, useGLTF } from "@react-three/drei";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ComponentRef } from "react";
 import * as THREE from "three";
 import type { Node, Edge } from "./types";
 
 const transform = (p:[number,number,number]):[number,number,number] => [p[0]*.052,p[2]*.052,-p[1]*.052];
+
+export type ViewDirection = "rostral" | "caudal" | "top" | "bottom";
+export type CameraSnap = {direction: ViewDirection; serial: number};
 
 export type LayerSettings = {
   anatomy:boolean;
@@ -60,9 +63,31 @@ function Network({nodes,edges,selected,onSelect,layers}:{nodes:Node[];edges:Edge
   </mesh>)}
  </group>;
 }
-export default function Scene(props:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings}){
+function CameraController({snap}:{snap:CameraSnap}){
+ const {camera}=useThree();
+ const controls=useRef<ComponentRef<typeof OrbitControls>>(null);
+ useEffect(()=>{
+   // Anatomical MNI y (rostral/anterior) maps to scene -z.
+   // Anatomical MNI z (superior) maps to scene +y.
+   const directions:Record<ViewDirection,[number,number,number]>={
+     rostral:[0,0,-1],
+     caudal:[0,0,1],
+     top:[0,1,0],
+     bottom:[0,-1,0]
+   };
+   const [x,y,z]=directions[snap.direction];
+   const distance=Math.max(9,camera.position.length());
+   camera.position.set(x*distance,y*distance,z*distance);
+   camera.up.set(0,Math.abs(y)>0?0:1,Math.abs(y)>0?-1:0);
+   camera.lookAt(0,0,0);
+   controls.current?.target.set(0,0,0);
+   controls.current?.update();
+ },[camera,snap.direction,snap.serial]);
+ return <OrbitControls ref={controls} makeDefault enablePan enableZoom minDistance={3} maxDistance={30}/>;
+}
+export default function Scene(props:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;snap:CameraSnap}){
  return <Canvas camera={{position:[0,0,12],fov:45}} gl={{antialias:true}} dpr={[1,2]}>
   <color attach="background" args={["#091426"]}/><ambientLight intensity={1.3}/><pointLight position={[10,10,10]} intensity={60}/>
-  <Network {...props}/><OrbitControls makeDefault enablePan enableZoom minDistance={3} maxDistance={30}/>
+  <Network {...props}/><CameraController snap={props.snap}/>
  </Canvas>;
 }
