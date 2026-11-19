@@ -10,7 +10,7 @@ Honnett Ltd, identified by the project owner as the copyright holder, offers its
 
 PolyForm is *source-available*, **not** an OSI-approved open-source licence. It allows permitted noncommercial uses including personal study, modifications and sharing subject to the full text of the licence. It expressly permits certain categories of organisations, including educational institutions and public research organisations, to use the software regardless of their funding. Commercial use outside those permitted categories requires permission or a separate agreement from the relevant copyright holder.
 
-No separate commercial licence or direct contact address is provided here; anyone wishing to arrange commercial use should contact Honnett Ltd through the repository maintainers to request authorisation. Permission to use this software is **not** an implied permission to use third-party data or assets in the same way.
+No separate commercial licence or direct email address is provided here; anyone wishing to arrange commercial use should contact [Honnett Ltd](https://www.honnett.com) to request authorisation. Permission to use this software is **not** an implied permission to use third-party data or assets in the same way.
 
 ## Separate rights — NOT relicensed under PolyForm
 
