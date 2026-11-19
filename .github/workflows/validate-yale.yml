@@ -1,0 +1,47 @@
+name: Validate Yale sample
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/validate-yale.yml
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install awscli numpy nibabel
+      - name: Download reference files
+        run: |
+          mkdir -p data/raw
+          base="s3://openneuro.org/ds007286/derivatives/MC_Shen268/sub-pa0475/ses-01/func"
+          aws s3 cp "$base/sub-pa0475_ses-01_task-rest_run-01_atlas-shen268_desc-bis_matrix.tsv" data/raw/rest.tsv --no-sign-request
+          aws s3 cp "$base/sub-pa0475_ses-01_task-nBack_atlas-shen268_desc-bis_matrix.tsv" data/raw/nback.tsv --no-sign-request
+          curl -fLsS --retry 3 -o data/raw/shen.nii https://raw.githubusercontent.com/YaleMRRC/YaleNeuroConnect_FullPredictions/main/shen_2mm_268_parcellation_vol.nii
+      - name: Check matrix and atlas
+        run: |
+          python - <<'PY'
+          import numpy as np, nibabel as nib
+          for fn in ['rest','nback']:
+              print('\n---',fn,'---')
+              with open('data/raw/'+fn+'.tsv') as f:
+                  for _ in range(2): print('Sample:',f.readline()[:180])
+              a=np.loadtxt('data/raw/'+fn+'.tsv',delimiter='\t')
+              print('Shape',a.shape,'range',np.nanmin(a),np.nanmax(a),'symmetry',np.max(np.abs(a-a.T)) if a.ndim==2 and a.shape[0]==a.shape[1] else 'n/a','finite',np.isfinite(a).all())
+          img=nib.load('data/raw/shen.nii')
+          labels=np.unique(np.asanyarray(img.dataobj))
+          print('Atlas shape',img.shape,'labels',len(labels),'min/max',labels.min(),labels.max(),'first',labels[:20],'last',labels[-10:])
+          print('Affine',img.affine)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yale-sample-validation
+          path: |
+            data/raw/rest.tsv
+            data/raw/nback.tsv
+            data/raw/shen.nii
+          retention-days: 1
