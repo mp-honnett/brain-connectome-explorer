@@ -19,6 +19,10 @@ type HeadProps = {
 // z level, left/right half-width, anterior/posterior half-depth, depth offset.
 // Unlike the initial egg-shaped mesh, the lower rings form a jaw and neck.
 // Their front extent sits behind the chin, rather than meeting at a sharp tip.
+// Tightened against the measured Shen268 envelope bounds (in MNI mm):
+// x approximately [-77, 77], anterior y up to +77, posterior y to -111,
+// z max approximately +87. Cranial clearance is illustrative, not a
+// measured scalp-to-cortex distance; the face and neck remain generous.
 const profile:ReadonlyArray<readonly [number,number,number,number]> = [
   [-137,36,38,-17],
   [-126,39,43,-16],
@@ -26,16 +30,16 @@ const profile:ReadonlyArray<readonly [number,number,number,number]> = [
   [-105,47,51,-4],
   [-96,52,61,4],
   [-86,59,74,7],
-  [-73,68,85,5],
-  [-55,79,99,0],
-  [-34,86,107,-4],
-  [-9,90,110,-6],
-  [18,94,113,-8],
-  [47,92,108,-10],
-  [76,82,100,-11],
-  [99,60,79,-10],
-  [115,34,47,-8],
-  [125,0,0,-8]
+  [-73,68,96,-7],
+  [-55,75,105,-12],
+  [-34,83,103,-13],
+  [-9,85,102,-16],
+  [18,85,102,-16],
+  [47,83,96,-16],
+  [76,66,81,-14],
+  [90,50,64,-15],
+  [100,24,36,-14],
+  [105,0,0,-12]
 ];
 
 function smoothProfile(z:number):[number,number,number]{
