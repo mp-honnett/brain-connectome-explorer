@@ -8,7 +8,8 @@ This register lists the content **actually incorporated** into Brain Connectome 
 ## 1. YaleNeuroConnect data — in use
 
 - **Source:** YaleNeuroConnect / OpenNeuro [ds007286](https://openneuro.org/datasets/ds007286).
-- **Scientific source / data descriptor:** [Scientific Data DOI: 10.1038/s41597-026-08749-0](https://doi.org/10.1038/s41597-026-08749-0).
+- **Scientific source / data descriptor:** Samardzija, A., Shen, X., Greene, A. S., et al. (2026), *A Transdiagnostic fMRI Dataset With 400+ Deeply Phenotyped Participants Across Resting and Task States*. [Scientific Data DOI: 10.1038/s41597-026-08749-0](https://doi.org/10.1038/s41597-026-08749-0).
+- **Journal article rights (different from dataset rights):** The published article is under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). The explorer links to this article but does not republish any of its text or illustrations. These restrictions do **not** automatically apply to the separately released OpenNeuro dataset.
 - **Current sample:** One anonymous source participant `sub-pa0475`, session `ses-01`; resting-state run 01 and n-back task matrices from `derivatives/MC_Shen268/`.
 - **Legal basis:** OpenNeuro describes released datasets as CC0, subject to the terms of the deposited dataset version. See the [OpenNeuro FAQ](https://docs.openneuro.org/faq) and [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Verify the exact source dataset version and derivative file terms before wider reuse.
 - **Modification:** Fisher-z matrices converted to Pearson correlations using `tanh`; compiled to `public/data/connectome.json`. Parcels are displayed from a transformed atlas coordinate system.
