@@ -6,7 +6,7 @@ import type { Dataset, Node } from "./types";
  * This is not a parcel-to-gyrus crosswalk. Shen parcels are functional
  * regions, and the exact matrix-row ↔ parcel-ID pairing in this sample
  * is still provisional. We use the atlas centroid's MNI-style X/Y/Z
- * plus a published broad Shen268 territory grouping to give an
+ * plus only broad coordinate-based spatial heuristics to give an
  * orientation *estimate*. A structural atlas overlap is needed before
  * assigning a definitive anatomical area or gyrus name.
  *
