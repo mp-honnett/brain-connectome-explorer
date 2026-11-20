@@ -9,26 +9,58 @@ const MNI_SCALE = 0.052;
  * The model's original geometry is never changed or disposed.
  *
  * This is a VISUAL wireframe reference, not the original CT mesh topology.
- * It removes the dense triangles that previously obscured Shen markers.
+ * It removes dense triangles that obscure Shen markers, but uses locally
+ * finer cells around the approximate eye sockets, nasal aperture and jaw.
+ * These are landmarks estimated from skull proportions, not CT annotations.
  */
-function sparseWireframeGeometry(original: THREE.BufferGeometry, detail: number): THREE.BufferGeometry {
+function sparseWireframeGeometry(
+  original: THREE.BufferGeometry,
+  detail: number,
+  worldMatrix: THREE.Matrix4,
+  modelBounds: THREE.Box3
+): THREE.BufferGeometry {
   const positions = original.getAttribute("position");
   if (!positions || positions.count < 3) return new THREE.BufferGeometry();
 
   original.computeBoundingBox();
   const bounds = original.boundingBox!;
   const size = bounds.getSize(new THREE.Vector3());
+  // All mesh parts share the same source-space bounds, so their facial
+  // refinements line up. Individual parts can have local transforms.
+  const modelSize = modelBounds.getSize(new THREE.Vector3());
+  const modelCenter = modelBounds.getCenter(new THREE.Vector3());
   const cellSize = Math.max(Math.max(size.x, size.y, size.z) / detail, 1e-6);
+  const world = new THREE.Vector3();
+  const gaussian3 = (a:number,b:number,c:number, sx:number,sy:number,sz:number) =>
+    Math.exp(-.5*((a/sx)**2+(b/sy)**2+(c/sz)**2));
 
   const vertexToCell = new Int32Array(positions.count);
   const cellIds = new Map<string, number>();
   const sums: Array<{x:number;y:number;z:number;n:number}> = [];
   for (let i = 0; i < positions.count; i++) {
     const x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+    world.set(x,y,z).applyMatrix4(worldMatrix);
+    const u = (world.x - modelCenter.x) / Math.max(modelSize.x,1e-6);
+    const v = (world.y - modelBounds.min.y) / Math.max(modelSize.y,1e-6);
+    const w = (world.z - modelBounds.min.z) / Math.max(modelSize.z,1e-6);
+
+    // The SU39 skull has its facial side toward local +Z before the
+    // viewer's default 180-degree yaw correction. These wide, soft zones
+    // are illustrative feature detection, not segmentation.
+    const eye = gaussian3(Math.abs(u)-.23,v-.61,w-.83,.15,.15,.23);
+    const nose = gaussian3(u,v-.44,w-.91,.15,.15,.20);
+    const jawCorner = gaussian3(Math.abs(u)-.30,v-.24,w-.73,.17,.15,.24);
+    const chin = gaussian3(u,v-.17,w-.91,.25,.14,.21);
+    const landmarkStrength = Math.max(eye,nose,jawCorner,chin);
+    // Two smooth-ish detail tiers produce finer orbits, nose and jawline
+    // while keeping the rest of the cranium sparse and non-distracting.
+    const tier = landmarkStrength > .42 ? 3 : landmarkStrength > .12 ? 2 : 1;
+    const step = cellSize / (tier===3?3:tier===2?1.65:1);
     const key = [
-      Math.floor((x - bounds.min.x) / cellSize),
-      Math.floor((y - bounds.min.y) / cellSize),
-      Math.floor((z - bounds.min.z) / cellSize)
+      tier,
+      Math.floor((x - bounds.min.x) / step),
+      Math.floor((y - bounds.min.y) / step),
+      Math.floor((z - bounds.min.z) / step)
     ].join(",");
     let id = cellIds.get(key);
     if (id === undefined) {
@@ -87,6 +119,8 @@ export default function SkullLayer({
 }) {
   const clone = useMemo(() => {
     const model = source.clone(true);
+    model.updateMatrixWorld(true);
+    const modelBounds = new THREE.Box3().setFromObject(model);
     model.traverse(object => {
       if (object instanceof THREE.Points) {
         // Point clouds have no mesh edges. In this case 0% hides the points.
@@ -105,7 +139,7 @@ export default function SkullLayer({
       if (wireframe) {
         // Build a sparse cage in place of a full-resolution triangle wireframe.
         // Keep the original imported source geometry completely untouched.
-        object.geometry = sparseWireframeGeometry(object.geometry, wireframeDetail);
+        object.geometry = sparseWireframeGeometry(object.geometry, wireframeDetail, object.matrixWorld, modelBounds);
         object.userData.headspinCoarseWireframe = true;
         object.material = new THREE.MeshBasicMaterial({
           color: "#9cbdcd",
