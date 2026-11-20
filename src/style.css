@@ -103,3 +103,20 @@
 .correlation-choice b{white-space:nowrap}
 .highlighted-value{color:#ffe783}
 .clear-highlight{background:#283d4d;border:1px solid #7d9aaa;color:#e6f4ff;width:100%;font-size:12px;padding:10px;margin-top:12px}
+
+/* Focus mode: keep the selected statistical relationship readable over the 3D canvas. */
+.focus-hud{position:absolute;z-index:4;left:16px;bottom:16px;max-width:min(440px,calc(100% - 32px));padding:14px 16px 12px;background:#071524ee;border:1px solid #d4b96b;border-radius:12px;box-shadow:0 8px 32px #02070ecc;pointer-events:auto;backdrop-filter:blur(8px)}
+.focus-hud-head{display:flex;align-items:center;gap:8px;color:#e3c975;letter-spacing:1.15px;font-size:10px;font-weight:800}
+.focus-hud-indicator{display:inline-block;flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:#ffe783;box-shadow:0 0 12px #ffe78399}
+.focus-hud-nodes{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:14px;line-height:1.45;margin-top:7px;color:#eef7fc}
+.focus-hud-nodes strong{font-weight:730}
+.focus-hud-bottom{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-top:7px}
+.focus-hud-score{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;color:#ffe783}
+.focus-hud-sign{font-size:11px;color:#b2c8d7}
+.focus-hud-actions{display:flex;gap:9px;margin-top:10px}
+.focus-hud-actions button{background:#1e3950;color:#d7effc;border:1px solid #3d637b;border-radius:7px;padding:7px 10px;font-size:11px;font-weight:650}
+.focus-hud-actions button:hover{background:#2d5369}
+.focus-node-label{display:inline-block;padding:6px 8px;background:#091827f5;border:1px solid #ebd289;border-radius:7px;color:#ffe9a8;font-size:11px;font-weight:750;white-space:nowrap;box-shadow:0 2px 9px #000b}
+.focus-inspector-controls{padding-top:9px}
+.focus-inspector-controls .layer-toggle{font-size:12px!important}
+@media(max-width:650px){.focus-hud{left:8px;bottom:8px;padding:10px 12px;max-width:calc(100% - 16px)}.focus-hud-nodes{font-size:12px}.focus-hud-score{font-size:16px}.focus-node-label{font-size:9px}}
