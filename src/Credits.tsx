@@ -11,7 +11,7 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
   return <div className="credits-page">
     <div className="credits-intro">
       <p className="eyebrow">PROVENANCE · ATTRIBUTION · REUSE RIGHTS</p>
-      <h1>Headspin · Credits &amp; Licences</h1>
+      <h1>Credits &amp; Licences</h1>
       <p>This explorer combines published neuroscience research, openly distributed data, an atlas-derived anatomical surface, original visualisation code, and open-source software. Scientific credit and legal reuse permissions are documented separately.</p>
       <div className="credits-alert" role="note"><strong>Rights still to verify:</strong> The exact Shen268 atlas NIfTI’s redistribution terms have not been independently confirmed. Honnett Ltd’s noncommercial software licence does not override third-party rights.</div>
     </div>

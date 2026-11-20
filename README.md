@@ -1,8 +1,8 @@
-# Headspin — a Tweenbrain product
+# HeadSpin
 
-**Headspin** is an interactive 3D brain explorer by **Tweenbrain**. Rotate a transparent head, view the CT-derived skull as an optional user-imported layer, explore schematic brain lobes and inspect functional connectivity.
+**HeadSpin** is an interactive 3D visualisation application. Rotate a transparent head, view the CT-derived skull as an optional user-imported layer, explore schematic brain lobes and inspect functional connectivity.
 
-The GitHub repository is deliberately still named `brain-connectome-explorer` to preserve the existing project URL and deployment configuration. The public-facing product name is **Headspin**.
+The GitHub repository is deliberately still named `brain-connectome-explorer` to preserve the existing project URL and deployment configuration. The public-facing product name is **HeadSpin**.
 
 The React/Three.js visualisation is intended for verified YaleNeuroConnect (OpenNeuro ds007286) Shen268 connectivity measurements.
 
