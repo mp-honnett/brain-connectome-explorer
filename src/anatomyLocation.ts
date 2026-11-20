@@ -16,6 +16,8 @@ export type LocationDescription = {
   scientificTerm: string;
   plainEnglish: string;
   position: string;
+  candidateSubregion: string | null;
+  brodmannStatus: string;
   source: "indicative-territory" | "coordinates-only";
   hemisphere: string;
   coordinate: [number, number, number];
@@ -39,10 +41,26 @@ export function describeNodeLocation(node:Node,dataset:Dataset):LocationDescript
   const isShen=dataset.nodes.length===268 && dataset.nodes.some(n=>n.id===node.id) && /shen|yale/i.test(dataset.metadata.source);
   let scientificTerm="Anatomical region not assigned";
   let plainEnglish="The coordinate locates this point in the brain, but an independently checked anatomical label is not available.";
+  let candidateSubregion:string|null=null;
+  // Brodmann area assignment needs a registered cytoarchitectonic atlas and
+  // voxelwise overlaps; it cannot reliably be read from a parcel centroid.
+  const brodmannStatus="Not assigned — atlas-overlap validation required";
 
   // A centroid alone cannot establish a cortical gyrus. These terms are
   // indicative coordinate territories, NOT verified parcel assignments.
   if(isShen){
+    // Approximate terminology only. The mPFC/vmPFC/dmPFC boundaries are
+    // convention-dependent and these coordinates do not establish a label.
+    // Keep these as explicitly qualified candidates, not parcel metadata.
+    if(Math.abs(x)<22 && y>18 && y<76 && z>=-22 && z<24){
+      candidateSubregion="Possible ventromedial prefrontal cortex (vmPFC) vicinity";
+    }else if(Math.abs(x)<23 && y>10 && y<72 && z>=24 && z<64){
+      candidateSubregion="Possible dorsomedial prefrontal cortex (dmPFC) vicinity";
+    }else if(Math.abs(x)<26 && y>=16 && y<72 && z>=-22 && z<65){
+      candidateSubregion="Possible medial prefrontal cortex (mPFC) vicinity";
+    }else if(y>25 && z<2 && Math.abs(x)<50){
+      candidateSubregion="Possible orbitofrontal cortex (OFC) vicinity";
+    }
     if(y>32 && z<3 && Math.abs(x)<42){
       scientificTerm=prefix+" orbitofrontal / ventral prefrontal vicinity";
       plainEnglish="Low in the front of the brain, approximately above and behind the eye socket.";
@@ -74,6 +92,8 @@ export function describeNodeLocation(node:Node,dataset:Dataset):LocationDescript
     scientificTerm,
     plainEnglish,
     position,
+    candidateSubregion,
+    brodmannStatus,
     source:isShen?"indicative-territory":"coordinates-only",
     hemisphere,
     coordinate
