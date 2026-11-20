@@ -26,6 +26,7 @@ export type LayerSettings = {
   skull:boolean;
   skullOpacity:number;
   skullWireframe:boolean;
+  skullWireframeDetail:number;
   skullYaw:number;
 };
 
@@ -71,7 +72,7 @@ function Network({nodes,edges,selected,onSelect,layers,skullModel,highlightedTar
  const hideOthers=inFocus&&soloFocus;
  return <group>
   {layers.head&&<HeadShell center={center} opacity={inFocus?Math.min(layers.headOpacity,.045):layers.headOpacity} wireframe={layers.headWireframe}/>}
-  {layers.skull&&skullModel&&!hideOthers&&<SkullLayer source={skullModel} center={center} opacity={inFocus?Math.min(layers.skullOpacity,.09):layers.skullOpacity} wireframe={layers.skullWireframe} yawDegrees={layers.skullYaw}/>}
+  {layers.skull&&skullModel&&!hideOthers&&<SkullLayer source={skullModel} center={center} opacity={inFocus?Math.min(layers.skullOpacity,.09):layers.skullOpacity} wireframe={layers.skullWireframe} wireframeDetail={layers.skullWireframeDetail} yawDegrees={layers.skullYaw}/>}
   {layers.anatomy&&<Suspense fallback={null}><AnatomySurface center={center} opacity={inFocus?Math.min(layers.opacity,.045):layers.opacity}/></Suspense>}
   {layers.lobeGuides&&!inFocus&&<LobeOverlay center={center} selection={layers.lobeSelection}/>}
   {layers.connections&&edges.filter(e=>!hideOthers||e.target===highlightedTarget).map(e=><Line
