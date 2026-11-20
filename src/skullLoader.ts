@@ -5,11 +5,12 @@ import * as THREE from "three";
 const DB_NAME = "tweenbrain-local-anatomy";
 const STORE = "skull-models";
 const KEY = "su39-skull";
-const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
+const MAX_UNPACKED_BUFFER_BYTES = 64 * 1024 * 1024;
 
-/** Read the user's original Sketchfab ZIP or an optimized GLB. */
+/** Read a browser-sized Sketchfab ZIP or an optimized GLB (including glTF POINTS). */
 export async function loadSkullModel(blob: Blob, name: string): Promise<THREE.Group> {
-  if (blob.size > MAX_UPLOAD_BYTES) throw new Error("Choose a ZIP or GLB smaller than 20 MB.");
+  if (blob.size > MAX_UPLOAD_BYTES) throw new Error("This import exceeds the 30 MB browser limit. Large CT point clouds must be optimized to GLB first.");
   const lower = name.toLowerCase();
   const loader = new GLTFLoader();
 
@@ -26,6 +27,10 @@ export async function loadSkullModel(blob: Blob, name: string): Promise<THREE.Gr
   const gltf = JSON.parse(strFromU8(files[gltfPath])) as {
     buffers?: Array<{ uri?: string; byteLength?: number }>;
   };
+  const bufferBytes = gltf.buffers?.[0]?.byteLength ?? 0;
+  if (bufferBytes > MAX_UNPACKED_BUFFER_BYTES) {
+    throw new Error(`This ZIP expands to ${Math.round(bufferBytes / 1024 / 1024)} MB of 3D data. Import a reduced GLB instead; the original multi-million-point CT cannot be rendered efficiently in HeadSpin.`);
+  }
   const bufferPath = gltf.buffers?.[0]?.uri;
   if (!bufferPath || /^https?:|^data:/i.test(bufferPath))
     throw new Error("This ZIP needs a single embedded scene.bin buffer.");
