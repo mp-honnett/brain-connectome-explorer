@@ -26,6 +26,7 @@ export type LayerSettings = {
   skull:boolean;
   skullOpacity:number;
   skullWireframe:boolean;
+  skullYaw:number;
 };
 
 function AnatomySurface({center,opacity}:{center:THREE.Vector3;opacity:number}){
@@ -67,7 +68,7 @@ function Network({nodes,edges,selected,onSelect,layers,skullModel}:{nodes:Node[]
  const neighbours=new Set([selected,...edges.map(e=>e.target)]);
  return <group>
   {layers.head&&<HeadShell center={center} opacity={layers.headOpacity} wireframe={layers.headWireframe}/>}
-  {layers.skull&&skullModel&&<SkullLayer source={skullModel} center={center} opacity={layers.skullOpacity} wireframe={layers.skullWireframe}/>}
+  {layers.skull&&skullModel&&<SkullLayer source={skullModel} center={center} opacity={layers.skullOpacity} wireframe={layers.skullWireframe} yawDegrees={layers.skullYaw}/>}
   {layers.anatomy&&<Suspense fallback={null}><AnatomySurface center={center} opacity={layers.opacity}/></Suspense>}
   {layers.lobeGuides&&<LobeOverlay center={center} selection={layers.lobeSelection}/>}
   {layers.connections&&edges.map(e=><Line key={e.target} points={[coords(e.source),coords(e.target)]} color={e.value>=0?"#5fd4ff":"#ff9fbb"} lineWidth={Math.max(1,Math.abs(e.value)*3)} transparent opacity={.4+Math.abs(e.value)*.5}/>)}
