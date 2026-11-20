@@ -17,21 +17,21 @@ type HeadProps = {
 };
 
 // z level, left/right half-width, anterior/posterior half-depth, depth offset.
-// Unlike the initial egg-shaped mesh, the lower rings form a jaw and neck.
-// Their front extent sits behind the chin, rather than meeting at a sharp tip.
-// Tightened against the measured Shen268 envelope bounds (in MNI mm):
-// x approximately [-77, 77], anterior y up to +77, posterior y to -111,
-// z max approximately +87. Cranial clearance is illustrative, not a
-// measured scalp-to-cortex distance; the face and neck remain generous.
+// MNI y positive = anterior. Keep the lower posterior contour continuous:
+// a gradual occipital-to-nuchal slope rather than the old abrupt bulge
+// around z=-73 (which looked like an overhanging cerebellar hood).
+// Lower anterior rings form a longer, rounded chin-to-neck transition.
+// This remains a generic illustrative mask, NOT a subject-specific scalp.
 const profile:ReadonlyArray<readonly [number,number,number,number]> = [
-  [-137,36,38,-17],
-  [-126,39,43,-16],
-  [-115,42,45,-10],
-  [-105,47,51,-4],
-  [-96,52,61,4],
-  [-86,59,74,7],
-  [-73,68,96,-7],
-  [-55,75,105,-12],
+  [-145,33,37,-19],
+  [-134,37,42,-18],
+  [-124,39,47,-17],
+  [-115,43,54,-14],
+  [-105,47,62,-12],
+  [-96,52,68,-10],
+  [-86,59,77,-9],
+  [-73,68,88,-12],
+  [-55,75,100,-12],
   [-34,83,103,-13],
   [-9,85,102,-16],
   [18,85,102,-16],
@@ -96,15 +96,23 @@ function makeHeadGeometry():THREE.BufferGeometry {
       const upperLip=2.2*gaussian(frontAngle,.24)*gaussian(z+63,5);
       const lowerLip=2.5*gaussian(frontAngle,.25)*gaussian(z+72,5);
       const underLip=-2.2*gaussian(frontAngle,.28)*gaussian(z+79,5);
-      const chin=17*gaussian(frontAngle,.36)*gaussian(z+94,16);
+      // The chin's lower contour should extend BELOW the former short
+      // mandible, while easing into the front of the neck without a point.
+      const chin=22*gaussian(frontAngle,.37)*gaussian(z+104,21);
+      const chinDrop=14*gaussian(frontAngle,.48)*gaussian(z+109,21);
 
-      const jawNarrowing=.13*front*gaussian(z+91,23);
+      // Pull the low nuchal surface forward slightly. The upper occipital
+      // shape is preserved to allow a loose envelope around the cerebellum.
+      const backAngle=Math.PI-absAngle;
+      const nuchalTuck=6*gaussian(backAngle,.52)*gaussian(z+81,19);
+      const jawNarrowing=.11*front*gaussian(z+105,25);
       const x=radiusX*Math.sin(theta)*(1-jawNarrowing);
       const y=offsetY+radiusY*Math.cos(theta)
         +bridge+tip+nostrils+subnasal
         +eyeSockets+brows+cheeks
-        +philtrum+upperLip+lowerLip+underLip+chin;
-      positions.push(...inScene(x,y,z));
+        +philtrum+upperLip+lowerLip+underLip+chin+nuchalTuck;
+      const chinZ=z-chinDrop;
+      positions.push(...inScene(x,y,chinZ));
     }
   }
   for(let row=0;row<rows;row++){
