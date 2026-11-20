@@ -62,3 +62,6 @@
 .skull-panel .skull-attribution{font-size:11px;line-height:1.65;color:#a7bed2;margin-top:14px}
 .skull-panel .skull-attribution a{text-decoration:underline;text-underline-offset:2px}
 .skull-panel strong{color:#e5f4ff}
+
+.skull-panel .skull-reset{width:100%;margin:4px 0 8px;padding:8px 12px;border:1px solid #476b81;background:#1b394c;color:#d5eaf4;border-radius:7px;font-size:12px}
+.skull-panel .skull-reset:disabled{opacity:.45;cursor:not-allowed}
