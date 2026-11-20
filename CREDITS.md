@@ -60,6 +60,18 @@ This register lists the content **actually incorporated** into Brain Connectome 
 - **Rights distinction:** Source skull and derivatives remain **CC BY 4.0**. Software authored by Honnett Ltd remains **PolyForm Noncommercial 1.0.0**. There is no transfer of copyright to Honnett Ltd and no implied affiliation with the Sketchfab creator.
 - **Scientific limitation:** The skull CT is from a different individual than the YaleNeuroConnect sample; showing both together is educational, not a combined subject MRI/CT reconstruction.
 
+### Full CT Head Point Cloud—Visible Human Female (optional user-imported asset)
+
+- **Title:** [Full CT Head Point Cloud—Visible Human Female](https://sketchfab.com/3d-models/full-ct-head-point-cloud-visible-human-female-76115e69f3304172835cfce7cc6714a8).
+- **Creator:** [Terrie](https://sketchfab.com/terrielsimmons).
+- **Licence:** [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), recorded in the uploaded `license.txt`.
+- **Attribution:** This work is based on "Full CT Head Point Cloud--Visible Human Female" (https://sketchfab.com/3d-models/full-ct-head-point-cloud-visible-human-female-76115e69f3304172835cfce7cc6714a8) by Terrie (https://sketchfab.com/terrielsimmons), licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/).
+- **Original data:** ~7.43 million points; ZIP ~20.7 MB; `scene.bin` expanded size 208,042,240 bytes.
+- **Prepared handoff:** 323,121 points (~5.2 MB GLB), deterministic every-23rd-point sampling, root glTF Y-up transform applied, model recentered for approximate rendering, original point RGB retained, original per-point alpha changed to opaque; overall model opacity remains adjustable.
+- **Runtime support:** Three.js `Points` materials, not a polygon mesh. This third-party model is **not bundled** in the deployed site, and the user must import the reduced GLB.
+- **Scientific limitation:** Source CT is not registered to Shen268 or YaleNeuroConnect and does not depict the same participant. The output is a visual teaching aid, not a diagnostic or anatomically registered combination.
+- **Rights:** CC BY 4.0 applies to source and derivative; original Honnett Ltd software remains PolyForm Noncommercial 1.0.0.
+
 ## 5. NPM libraries — in use
 
 Software packages used in this project include React, React DOM, Three.js, React Three Fiber, Drei, Vite, TypeScript and their transitive dependencies. Package terms vary and should be checked individually. The project's GitHub Pages build generates `/legal/third-party-notices.txt` from the actual installed npm package tree and includes licence texts/NOTICE files where present:
