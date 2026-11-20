@@ -48,19 +48,17 @@ This register lists the content **actually incorporated** into Brain Connectome 
 - **Changes / description:** Generic illustrative head shell with adjustable opacity and optional wireframe; aligned to the visualisation's MNI-like axes.
 - **Qualification:** Not a medically validated anatomical reconstruction.
 
-## 4. External 3D skull models — NOT yet in use
+## 4. CT-derived skull — user-imported; CC BY 4.0 (not bundled on GitHub Pages)
 
-**No external Sketchfab, Thingiverse or other downloadable skull model is in the current deployed site.** Candidate models are not credited as incorporated assets. If one is added, insert a record including:
-
-- Exact creator's name/handle and preferred attribution text;
-- Exact model title and canonical source URL;
-- Original file version, download date and source licence (with a stable link to the licence);
-- Whether redistribution and modification are permitted;
-- List of modifications (decimation, scaling, orientation, registration, conversion to GLB, recolouring);
-- Licence/NOTICE and original files that must accompany redistribution;
-- Explicitly whether the licence has attribution, share-alike, non-commercial or no-derivatives conditions.
-
-For CC BY 4.0 model use, see [licence text](https://creativecommons.org/licenses/by/4.0/). **Do not use a prospective model's attribution as a substitute for checking its actual licence.**
+- **Title:** [Human skull SU39 from CT scan](https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed).
+- **Creator:** [SusanElaineJones](https://sketchfab.com/SusanElaineJones).
+- **Licence:** [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/), explicitly supplied in `license.txt` in the user-uploaded original Sketchfab ZIP.
+- **Creator's requested credit:** This work is based on "Human skull SU39 from CT scan" (https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed) by SusanElaineJones (https://sketchfab.com/SusanElaineJones) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- **Actual viewer integration:** Viewer accepts the model locally as original Sketchfab ZIP or processed GLB; transparency, wireframe and visibility independently controlled. The user can save their local imported file in IndexedDB where available. **The deployed website does not include a binary skull model**, and users must import it.
+- **Prepared model changes:** Three source meshes merged into one GLB; mesh vertices clustered on a 1.5-mm grid to reduce geometry from 245,158 to 147,582 triangles; model colours replaced with a neutral bone-tone material. Source glTF Y-up scene orientation is baked into the prepared model. The optional handoff ZIP includes the source `license.txt` and a processing README.
+- **Approximate placement:** Scale factor `0.052 * 1.18` and vertical translation of `15 * 0.052` in the viewer's scene coordinate frame, then subtract the existing atlas node-centre transform. This is a visual fit only, **not** an independently validated atlas/CT registration.
+- **Rights distinction:** Source skull and derivatives remain **CC BY 4.0**. Software authored by Honnett Ltd remains **PolyForm Noncommercial 1.0.0**. There is no transfer of copyright to Honnett Ltd and no implied affiliation with the Sketchfab creator.
+- **Scientific limitation:** The skull CT is from a different individual than the YaleNeuroConnect sample; showing both together is educational, not a combined subject MRI/CT reconstruction.
 
 ## 5. NPM libraries — in use
 
