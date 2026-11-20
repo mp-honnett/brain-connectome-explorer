@@ -12,8 +12,8 @@ export const LOBES = [
     color: "#E8A24B",
     description: "Planning, decision-making and voluntary movement",
     short: "Executive and motor functions",
-    center: [42, 42, 38] as const,
-    radii: [34, 38, 38] as const
+    center: [40, 47, 34] as const,
+    radii: [33, 44, 32] as const
   },
   {
     id: "parietal",
@@ -21,8 +21,8 @@ export const LOBES = [
     color: "#55B8E7",
     description: "Somatosensory processing and spatial attention",
     short: "Sensation and spatial attention",
-    center: [40, -34, 50] as const,
-    radii: [37, 43, 35] as const
+    center: [39, -41, 54] as const,
+    radii: [36, 48, 30] as const
   },
   {
     id: "temporal",
@@ -30,8 +30,8 @@ export const LOBES = [
     color: "#B598EC",
     description: "Auditory processing, language and memory",
     short: "Auditory, language and memory",
-    center: [51, -28, -17] as const,
-    radii: [28, 41, 24] as const
+    center: [48, -23, -22] as const,
+    radii: [27, 51, 20] as const
   },
   {
     id: "occipital",
@@ -39,8 +39,8 @@ export const LOBES = [
     color: "#61CDA7",
     description: "Visual processing",
     short: "Visual processing",
-    center: [33, -82, 25] as const,
-    radii: [32, 27, 29] as const
+    center: [32, -88, 24] as const,
+    radii: [29, 31, 28] as const
   },
   {
     id: "insula",
@@ -48,8 +48,8 @@ export const LOBES = [
     color: "#EB91A0",
     description: "Interoception and integration of sensory and emotional information",
     short: "Interoception and integration",
-    center: [34, 7, 7] as const,
-    radii: [15, 22, 20] as const
+    center: [26, 5, 5] as const,
+    radii: [12, 19, 16] as const
   }
 ] as const;
 
