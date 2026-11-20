@@ -53,7 +53,7 @@ export default function App(){
  const [activeSection,setActiveSection]=useState<SidebarSection|null>(null);
  const toggleSection=(section:SidebarSection)=>setActiveSection(previous=>previous===section?null:section);
  const chooseView=(direction:ViewDirection)=>setSnap(prev=>({direction,serial:prev.serial+1}));
- const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.16,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all",skull:false,skullOpacity:.32,skullWireframe:false,skullYaw:(()=>{try{const saved=window.localStorage.getItem("tweenbrain-skull-yaw-v1");return saved===null?180:Math.max(0,Math.min(360,Number(saved)||0))}catch{return 180}})()});
+ const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.08,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all",skull:false,skullOpacity:0,skullWireframe:true,skullYaw:(()=>{try{const saved=window.localStorage.getItem("tweenbrain-skull-yaw-v1");return saved===null?180:Math.max(0,Math.min(360,Number(saved)||0))}catch{return 180}})()});
  const updateLayer=(part:Partial<LayerSettings>)=>setLayers(previous=>({...previous,...part}));
  useEffect(()=>{try{window.localStorage.setItem("tweenbrain-skull-yaw-v1",String(layers.skullYaw))}catch{/* Optional preference */}},[layers.skullYaw]);
  const fileInput=useRef<HTMLInputElement>(null);
@@ -165,8 +165,9 @@ export default function App(){
  {skullModel&&<p className="muted"><strong>Loaded:</strong> {skullName} {skullSaved?"· Saved in this browser":"· This session only"}</p>}
  {skullModel&&<button type="button" className="skull-remove" onClick={clearSkull}>Remove imported skull</button>}
  <label>Skull opacity <b>{Math.round(layers.skullOpacity*100)}%</b></label>
- <input type="range" min="0.05" max="1" step="0.05" disabled={!layers.skull||!skullModel} value={layers.skullOpacity} onChange={e=>updateLayer({skullOpacity:Number(e.target.value)})}/>
+ <input type="range" min="0" max="1" step="0.05" disabled={!layers.skull||!skullModel} value={layers.skullOpacity} onChange={e=>updateLayer({skullOpacity:Number(e.target.value)})}/>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.skullWireframe} disabled={!layers.skull||!skullModel} onChange={e=>updateLayer({skullWireframe:e.target.checked})}/> Skull wireframe</span></label>
+ <p className="muted">For triangle-mesh CT models, wireframe lines remain visible even with 0% solid opacity. Point-cloud models have no mesh edges, so 0% hides their points.</p>
  <label htmlFor="skull-yaw">Skull horizontal rotation <b>{layers.skullYaw}°</b></label>
  <input id="skull-yaw" aria-label="Skull horizontal rotation in degrees" type="range" min="0" max="360" step="5" disabled={!skullModel} value={layers.skullYaw} onChange={e=>updateLayer({skullYaw:Number(e.target.value)})}/>
  <button type="button" className="skull-reset" disabled={!skullModel||layers.skullYaw===180} onClick={()=>updateLayer({skullYaw:180})}>Reset to corrected 180°</button>
