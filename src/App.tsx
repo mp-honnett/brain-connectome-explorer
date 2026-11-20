@@ -53,7 +53,7 @@ export default function App(){
  const [activeSection,setActiveSection]=useState<SidebarSection|null>(null);
  const toggleSection=(section:SidebarSection)=>setActiveSection(previous=>previous===section?null:section);
  const chooseView=(direction:ViewDirection)=>setSnap(prev=>({direction,serial:prev.serial+1}));
- const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.08,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all",skull:false,skullOpacity:0,skullWireframe:true,skullYaw:(()=>{try{const saved=window.localStorage.getItem("tweenbrain-skull-yaw-v1");return saved===null?180:Math.max(0,Math.min(360,Number(saved)||0))}catch{return 180}})()});
+ const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.08,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all",skull:false,skullOpacity:0,skullWireframe:true,skullWireframeDetail:12,skullYaw:(()=>{try{const saved=window.localStorage.getItem("tweenbrain-skull-yaw-v1");return saved===null?180:Math.max(0,Math.min(360,Number(saved)||0))}catch{return 180}})()});
  const updateLayer=(part:Partial<LayerSettings>)=>setLayers(previous=>({...previous,...part}));
  useEffect(()=>{try{window.localStorage.setItem("tweenbrain-skull-yaw-v1",String(layers.skullYaw))}catch{/* Optional preference */}},[layers.skullYaw]);
  const fileInput=useRef<HTMLInputElement>(null);
@@ -136,6 +136,17 @@ export default function App(){
      <button type="button" onClick={()=>setHighlightedTarget(null)}>Clear focus</button>
    </div>
  </div>}</div>
+ {focusedEdge&&data&&<section className="hero-endpoint-section" aria-label="Selected correlation anatomical locations">
+   <div className="hero-endpoint-heading">
+     <div><p className="eyebrow">SELECTED CONNECTION</p><h2>Where are these regions?</h2></div>
+     <span className="hero-endpoint-r">r = {focusedEdge.value>=0?"+":""}{focusedEdge.value.toFixed(3)}</span>
+   </div>
+   <div className="hero-endpoint-grid">
+     <EndpointCard node={data.nodes[focusedEdge.source]} dataset={data} role="From"/>
+     <EndpointCard node={data.nodes[focusedEdge.target]} dataset={data} role="To"/>
+   </div>
+   <p className="endpoint-method-note">Coordinates are Shen atlas centroids in MNI-style millimetres. The scientific terms and plain-English locations are broad estimates, not verified parcel-to-gyrus classifications; the correlation matrix's row-to-parcel mapping remains provisional.</p>
+ </section>}
  <div className="note"><b>Interpretation</b><p>Connections show correlation between measured fMRI time series, not physical fibre tracts or causal communication. Display thresholds are not statistical significance tests.</p></div></section>
  <aside aria-label="Explorer controls">
  <AccordionPanel section="camera" title="CAMERA VIEWS" open={activeSection==="camera"} onToggle={()=>toggleSection("camera")}>
@@ -167,7 +178,10 @@ export default function App(){
  <label>Skull opacity <b>{Math.round(layers.skullOpacity*100)}%</b></label>
  <input type="range" min="0" max="1" step="0.05" disabled={!layers.skull||!skullModel} value={layers.skullOpacity} onChange={e=>updateLayer({skullOpacity:Number(e.target.value)})}/>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.skullWireframe} disabled={!layers.skull||!skullModel} onChange={e=>updateLayer({skullWireframe:e.target.checked})}/> Skull wireframe</span></label>
- <p className="muted">For triangle-mesh CT models, wireframe lines remain visible even with 0% solid opacity. Point-cloud models have no mesh edges, so 0% hides their points.</p>
+ <p className="muted">The skull is a faint, secondary guide. A sparse cage leaves Shen points and correlations easy to see.</p>
+ <label htmlFor="skull-density">Skull wireframe detail <b>{layers.skullWireframeDetail}</b></label>
+ <input id="skull-density" type="range" min="7" max="30" step="1" value={layers.skullWireframeDetail} disabled={!skullModel||!layers.skull||!layers.skullWireframe} onChange={e=>updateLayer({skullWireframeDetail:Number(e.target.value)})}/>
+ <p className="muted">Lower = more open mesh. Higher = finer mesh. Point-cloud models do not have triangle wireframes.</p>
  <label htmlFor="skull-yaw">Skull horizontal rotation <b>{layers.skullYaw}°</b></label>
  <input id="skull-yaw" aria-label="Skull horizontal rotation in degrees" type="range" min="0" max="360" step="5" disabled={!skullModel} value={layers.skullYaw} onChange={e=>updateLayer({skullYaw:Number(e.target.value)})}/>
  <button type="button" className="skull-reset" disabled={!skullModel||layers.skullYaw===180} onClick={()=>updateLayer({skullYaw:180})}>Reset to corrected 180°</button>
