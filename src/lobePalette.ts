@@ -21,8 +21,8 @@ export const LOBES = [
     color: "#55B8E7",
     description: "Somatosensory processing and spatial attention",
     short: "Sensation and spatial attention",
-    center: [39, -41, 54] as const,
-    radii: [36, 48, 30] as const
+    center: [39, -37, 43] as const,
+    radii: [36, 48, 36] as const
   },
   {
     id: "temporal",
@@ -30,8 +30,8 @@ export const LOBES = [
     color: "#B598EC",
     description: "Auditory processing, language and memory",
     short: "Auditory, language and memory",
-    center: [48, -23, -22] as const,
-    radii: [27, 51, 20] as const
+    center: [47, -22, -13] as const,
+    radii: [27, 51, 28] as const
   },
   {
     id: "occipital",
