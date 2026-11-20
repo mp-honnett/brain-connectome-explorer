@@ -54,7 +54,7 @@ function AnatomySurface({center,opacity}:{center:THREE.Vector3;opacity:number}){
   return <primitive object={model} position={[-center.x,-center.y,-center.z]}/>;
 }
 
-function Network({nodes,edges,selected,onSelect,layers,skullModel}:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;skullModel:THREE.Group|null}){
+function Network({nodes,edges,selected,onSelect,layers,skullModel,highlightedTarget}:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;skullModel:THREE.Group|null;highlightedTarget:number|null}){
  const [hover,setHover]=useState<number|null>(null);
  const center=useMemo(()=>{
    const v=new THREE.Vector3();
@@ -66,15 +66,27 @@ function Network({nodes,edges,selected,onSelect,layers,skullModel}:{nodes:Node[]
    return [p[0]-center.x,p[1]-center.y,p[2]-center.z];
  };
  const neighbours=new Set([selected,...edges.map(e=>e.target)]);
+ const focusedEdge=edges.find(e=>e.target===highlightedTarget);
  return <group>
   {layers.head&&<HeadShell center={center} opacity={layers.headOpacity} wireframe={layers.headWireframe}/>}
   {layers.skull&&skullModel&&<SkullLayer source={skullModel} center={center} opacity={layers.skullOpacity} wireframe={layers.skullWireframe} yawDegrees={layers.skullYaw}/>}
   {layers.anatomy&&<Suspense fallback={null}><AnatomySurface center={center} opacity={layers.opacity}/></Suspense>}
   {layers.lobeGuides&&<LobeOverlay center={center} selection={layers.lobeSelection}/>}
-  {layers.connections&&edges.map(e=><Line key={e.target} points={[coords(e.source),coords(e.target)]} color={e.value>=0?"#5fd4ff":"#ff9fbb"} lineWidth={Math.max(1,Math.abs(e.value)*3)} transparent opacity={.4+Math.abs(e.value)*.5}/>)}
+  {layers.connections&&edges.map(e=><Line key={e.target} points={[coords(e.source),coords(e.target)]}
+    color={focusedEdge?(e.target===highlightedTarget?"#ffe783":e.value>=0?"#5fd4ff":"#ff9fbb"):e.value>=0?"#5fd4ff":"#ff9fbb"}
+    lineWidth={focusedEdge?(e.target===highlightedTarget?5:1):Math.max(1,Math.abs(e.value)*3)}
+    transparent opacity={focusedEdge?(e.target===highlightedTarget?1:.12):.4+Math.abs(e.value)*.5}
+    depthTest={!focusedEdge||e.target!==highlightedTarget}/>)}
+  {focusedEdge&&<Line key={"focus-"+focusedEdge.target} points={[coords(focusedEdge.source),coords(focusedEdge.target)]}
+    color="#ffe783" lineWidth={6} transparent opacity={1} depthTest={false}/>}
+  {focusedEdge&&[focusedEdge.source,focusedEdge.target].map(i=><mesh key={"focus-node-"+i}
+    position={coords(i)} renderOrder={20}>
+    <sphereGeometry args={[.20,20,16]}/>
+    <meshBasicMaterial color="#ffe783" transparent opacity={.95} depthTest={false}/>
+  </mesh>)}
   {layers.parcels&&nodes.map((n,i)=><mesh key={n.id} position={coords(i)} onClick={(e:ThreeEvent<MouseEvent>)=>{e.stopPropagation();onSelect(i)}} onPointerOver={(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();setHover(i)}} onPointerOut={()=>setHover(null)}>
    <sphereGeometry args={[i===selected?.14:.075,12,10]}/>
-   <meshStandardMaterial color={i===selected?"#ffc06a":neighbours.has(i)?"#76dbff":"#68839b"} emissive={i===selected?"#ad6529":"#263b5b"} emissiveIntensity={.35} transparent opacity={neighbours.has(i)?1:.6} depthTest={false}/>
+   <meshStandardMaterial color={focusedEdge&&(i===selected||i===highlightedTarget)?"#ffe783":i===selected?"#ffc06a":neighbours.has(i)?"#76dbff":"#68839b"} emissive={i===selected?"#ad6529":"#263b5b"} emissiveIntensity={.35} transparent opacity={focusedEdge&&(i!==selected&&i!==highlightedTarget)?.2:neighbours.has(i)?1:.6} depthTest={false}/>
    {(hover===i||selected===i)&&<Html distanceFactor={10} style={{pointerEvents:"none",whiteSpace:"nowrap"}}><span className="node-label">{n.label}</span></Html>}
   </mesh>)}
  </group>;
@@ -103,7 +115,7 @@ function CameraController({snap}:{snap:CameraSnap}){
  },[camera,snap.direction,snap.serial]);
  return <OrbitControls ref={controls} makeDefault enablePan enableZoom minDistance={3} maxDistance={30}/>;
 }
-export default function Scene(props:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;snap:CameraSnap;skullModel:THREE.Group|null}){
+export default function Scene(props:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;snap:CameraSnap;skullModel:THREE.Group|null;highlightedTarget:number|null}){
  return <Canvas camera={{position:[0,0,12],fov:45}} gl={{antialias:true}} dpr={[1,2]}>
   <color attach="background" args={["#091426"]}/><ambientLight intensity={1.3}/><pointLight position={[10,10,10]} intensity={60}/>
   <Network {...props}/><CameraController snap={props.snap}/>
