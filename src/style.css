@@ -154,3 +154,9 @@
 .hero-endpoint-grid .endpoint-area p{font-size:13px}
 .hero-endpoint-section .endpoint-method-note{font-size:11px;line-height:1.6}
 @media(max-width:740px){.hero-endpoint-grid{grid-template-columns:minmax(0,1fr)}.hero-endpoint-section{padding:14px}}
+
+/* Optional, cautious neuroanatomical subregion suggestions in endpoint cards. */
+.endpoint-candidate{display:grid;gap:5px;margin-top:8px;padding:9px 10px;background:#243647;border:1px solid #587184;border-radius:7px}
+.endpoint-candidate strong{font-size:12px;color:#e5e4f8;font-weight:650;line-height:1.4}
+.endpoint-brodmann{display:grid;gap:4px;border-top:1px solid #2a475e;padding-top:9px}
+.endpoint-brodmann>span:last-child{font-size:11px;color:#bdcfdf;line-height:1.5}
