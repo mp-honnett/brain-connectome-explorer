@@ -65,3 +65,17 @@
 
 .skull-panel .skull-reset{width:100%;margin:4px 0 8px;padding:8px 12px;border:1px solid #476b81;background:#1b394c;color:#d5eaf4;border-radius:7px;font-size:12px}
 .skull-panel .skull-reset:disabled{opacity:.45;cursor:not-allowed}
+
+/* Compact single-open accordion: all controls remain mounted, but hidden panels
+   take no space and their controls are removed from keyboard navigation. */
+.accordion-panel{padding:0;overflow:hidden;margin-bottom:10px}
+.accordion-heading{margin:0!important;font-size:inherit!important;line-height:1.35}
+.accordion-heading>button{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:53px;padding:15px 17px;background:transparent;color:#7ad5ef;border:0;border-radius:12px;text-align:left;font-size:11px;font-weight:750;letter-spacing:1.2px;line-height:1.4}
+.accordion-heading>button:hover{background:#1b3448;color:#d9f6ff}
+.accordion-heading>button:focus-visible{outline:3px solid #79d8f7;outline-offset:-4px}
+.accordion-heading>button[aria-expanded="true"]{background:#183247;color:#b2edff}
+.accordion-chevron{display:block;width:9px;height:9px;flex:0 0 9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .16s ease}
+.accordion-heading>button[aria-expanded="true"] .accordion-chevron{transform:rotate(225deg)}
+.accordion-body{padding:5px 18px 20px}
+.accordion-body[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.accordion-chevron{transition:none}}
