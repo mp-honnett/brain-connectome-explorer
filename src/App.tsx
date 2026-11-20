@@ -133,10 +133,10 @@ export default function App(){
  <label>Brain transparency <b>{Math.round((1-layers.opacity)*100)}%</b></label>
  <input type="range" min="0.05" max="0.8" step="0.05" disabled={!layers.anatomy} value={layers.opacity} onChange={e=>updateLayer({opacity:Number(e.target.value)})}/>
  <p className="muted">The translucent surface is a smoothed outline derived from the Shen268 atlas, not a detailed subject MRI. The connecting lines are statistical fMRI relationships, not axon pathways.</p></AccordionPanel>
- <AccordionPanel section="skull" title="REAL CT SKULL · OPTIONAL LAYER" className="skull-panel" open={activeSection==="skull"} onToggle={()=>toggleSection("skull")}>
- <label className="layer-toggle"><span><input type="checkbox" checked={layers.skull} disabled={!skullModel} onChange={e=>updateLayer({skull:e.target.checked})}/> Human skull SU39 (CT scan)</span></label>
- <p className="muted">Use the model from SusanElaineJones on Sketchfab. Import the original ZIP or the prepared GLB. The model loads in your browser and is never uploaded to Honnett.</p>
- <button type="button" className="secondary" disabled={skullBusy} onClick={()=>skullInput.current?.click()}>{skullBusy?"Loading skull…":skullModel?"Replace skull model":"Import skull ZIP / GLB"}</button>
+ <AccordionPanel section="skull" title="CT HEAD / SKULL · OPTIONAL LAYER" className="skull-panel" open={activeSection==="skull"} onToggle={()=>toggleSection("skull")}>
+ <label className="layer-toggle"><span><input type="checkbox" checked={layers.skull} disabled={!skullModel} onChange={e=>updateLayer({skull:e.target.checked})}/> Show imported CT model</span></label>
+ <p className="muted">Import a browser-sized GLB or Sketchfab ZIP. Large CT point clouds (including the Visible Human Female scan) require a reduced GLB; original multi-million-point ZIPs are too large to render reliably. The file stays in your browser.</p>
+ <button type="button" className="secondary" disabled={skullBusy} onClick={()=>skullInput.current?.click()}>{skullBusy?"Loading skull…":skullModel?"Replace CT model":"Import CT model ZIP / GLB"}</button>
  <input hidden type="file" accept=".zip,.glb,application/zip,model/gltf-binary" ref={skullInput} onChange={e=>importSkull(e.target.files?.[0])}/>
  {skullModel&&<p className="muted"><strong>Loaded:</strong> {skullName} {skullSaved?"· Saved in this browser":"· This session only"}</p>}
  {skullModel&&<button type="button" className="skull-remove" onClick={clearSkull}>Remove imported skull</button>}
@@ -146,10 +146,10 @@ export default function App(){
  <label htmlFor="skull-yaw">Skull horizontal rotation <b>{layers.skullYaw}°</b></label>
  <input id="skull-yaw" aria-label="Skull horizontal rotation in degrees" type="range" min="0" max="360" step="5" disabled={!skullModel} value={layers.skullYaw} onChange={e=>updateLayer({skullYaw:Number(e.target.value)})}/>
  <button type="button" className="skull-reset" disabled={!skullModel||layers.skullYaw===180} onClick={()=>updateLayer({skullYaw:180})}>Reset to corrected 180°</button>
- <p className="muted">The original SU39 skull faced backwards. A 180° rotation is now applied by default, and you can fine-tune it here. This changes only the skull, not the camera or brain.</p>
+ <p className="muted">The SU39 skull needed a 180° yaw adjustment. A different CT model may face another direction; use the slider to align it. The rotation affects only the imported model.</p>
  {skullError&&<p className="error" role="status">{skullError}</p>}
- <p className="muted">Approximate visual alignment only: SU39 is a different CT subject and has <strong>not</strong> been registered to Shen268 or YaleNeuroConnect.</p>
- <p className="skull-attribution">Based on <a href="https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed" target="_blank" rel="noopener noreferrer">Human skull SU39 from CT scan</a> by <a href="https://sketchfab.com/SusanElaineJones" target="_blank" rel="noopener noreferrer">SusanElaineJones</a>. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Prepared GLB simplifies triangles and changes the material. Rights for this skull are separate from the software licence.</p>
+ <p className="muted">Approximate visual alignment only. Imported CT scans are not registered to Shen268 or YaleNeuroConnect and may have different scale and orientation.</p>
+ <p className="skull-attribution">Model credits: <a href="https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed" target="_blank" rel="noopener noreferrer">SU39 skull</a> by SusanElaineJones; <a href="https://sketchfab.com/3d-models/full-ct-head-point-cloud-visible-human-female-76115e69f3304172835cfce7cc6714a8" target="_blank" rel="noopener noreferrer">Visible Human Female CT point cloud</a> by Terrie. Both under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> and separate from the application software licence. See Credits &amp; Licences for model-specific attribution and modifications.</p>
  </AccordionPanel>
  <AccordionPanel section="lobes" title="ANATOMY GUIDE · SCHEMATIC" className="lobe-panel" open={activeSection==="lobes"} onToggle={()=>toggleSection("lobes")}>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.lobeGuides} onChange={e=>updateLayer({lobeGuides:e.target.checked})}/> Show coloured lobe guides</span></label>
