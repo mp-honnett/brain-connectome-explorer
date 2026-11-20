@@ -71,3 +71,11 @@ The optional **Human skull SU39 from CT scan** layer can be imported directly in
 **Not anatomically registered:** The source CT comes from a different individual, and alignment to the Shen268/YaleNeuroConnect scene is an approximate scale/translation for educational orientation only. It must not be interpreted as patient-specific anatomy or a medically validated registration. The skull retains its **CC BY 4.0** rights separately from Honnett Ltd's PolyForm-licensed application code.
 
 
+
+## Optional Visible Human Female CT point cloud
+
+HeadSpin can now render an imported point-cloud `GLB` (glTF primitive mode `POINTS`) with per-point RGB colours, global opacity and yaw adjustment. It is distinct from the SU39 polygonal skull model.
+
+The user-provided original [Full CT Head Point Cloud—Visible Human Female](https://sketchfab.com/3d-models/full-ct-head-point-cloud-visible-human-female-76115e69f3304172835cfce7cc6714a8) by [Terrie](https://sketchfab.com/terrielsimmons), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), contains ~7.43 million points. Its roughly 20.7 MB ZIP expands to ~208 MB of source binary, which is not suitable for direct browser import. The optimized handoff GLB reduces the model to 323,121 points (~5.2 MB), preserves RGB and recenters the geometry in a visual approximation of HeadSpin's scene frame. Import **the GLB**, not the original large ZIP. Point cloud colors are rendered opaque prior to applying the app's overall opacity slider.
+
+The original source, reduced model and other imported third-party data have independent CC BY terms. The converted CT represents a different individual and has **not been registered** to the Shen268 brain atlas. The app does not bundle the CT point cloud; users import the model locally.
