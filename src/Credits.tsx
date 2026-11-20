@@ -103,6 +103,14 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
           <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0 terms ↗</a>
         </div>
       </div>
+      <div className="credit-entry">
+        <div className="credit-entry-head"><h3>Full CT Head Point Cloud—Visible Human Female</h3><span className="credit-status">CC BY 4.0 · User-imported</span></div>
+        <p><strong>Creator:</strong> <a href="https://sketchfab.com/terrielsimmons" target="_blank" rel="noopener noreferrer">Terrie</a>. <strong>Source:</strong> <a href="https://sketchfab.com/3d-models/full-ct-head-point-cloud-visible-human-female-76115e69f3304172835cfce7cc6714a8" target="_blank" rel="noopener noreferrer">Full CT Head Point Cloud—Visible Human Female</a>.</p>
+        <p><strong>Licence:</strong> <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 4.0 International</a>, per the author's licence.txt included with the uploaded ZIP. The original model and the adapted point cloud retain the source licence, independent of the application software licence.</p>
+        <p><strong>Required attribution:</strong> Based on <a href="https://sketchfab.com/3d-models/full-ct-head-point-cloud-visible-human-female-76115e69f3304172835cfce7cc6714a8" target="_blank" rel="noopener noreferrer">"Full CT Head Point Cloud—Visible Human Female"</a> by <a href="https://sketchfab.com/terrielsimmons" target="_blank" rel="noopener noreferrer">Terrie</a>, licensed under CC BY 4.0.</p>
+        <p><strong>Preparation:</strong> The approximately 7.43-million-point source glTF was deterministically sampled to 323,121 points (stride 23), coordinates were axis-converted and recentered, point RGB colours were preserved, and original variable point transparency was replaced with opaque colours for use with the viewer's global opacity control. The reduced point cloud is exported as a roughly 5 MB GLB. This is a POINTS geometry, not a polygonal skin or skull mesh.</p>
+        <p><strong>Use:</strong> The viewer can import the prepared GLB locally; the huge original source ZIP expands to roughly 208 MB and is not recommended for direct browser import. This scan comes from a different individual and is not anatomically registered to the Shen268 connectome.</p>
+      </div>
     </section>
 
     <section className="credit-section" aria-labelledby="credit-software">
