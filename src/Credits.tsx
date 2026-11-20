@@ -91,9 +91,17 @@ export default function Credits({metadata}:{metadata?:Dataset["metadata"]}){
         <p><strong>Project code licence:</strong> PolyForm Noncommercial 1.0.0 applies to original procedural geometry and app code owned by Honnett Ltd; see the software licence section above.</p>
       </div>
       <div className="credit-entry">
-        <div className="credit-entry-head"><h3>Possible future Sketchfab / Thingiverse skull</h3><span className="credit-status needs-review">Not included</span></div>
-        <p>No externally downloaded skull mesh has been integrated into the live explorer. Before adding one, record the original creator, exact model title and URL, licence and version, download date, modifications (such as decimation, registration, recolouring and format conversion), and any required credit statement or licence file.</p>
-        <p>Creative Commons licences differ: attribution may be mandatory and restrictions such as NonCommercial or NoDerivatives must be evaluated before adapting and publishing a model.</p>
+        <div className="credit-entry-head"><h3>Human skull SU39 from CT scan</h3><span className="credit-status">CC BY 4.0 · User-imported</span></div>
+        <p><strong>Creator:</strong> SusanElaineJones. <strong>Model:</strong> <a href="https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed" target="_blank" rel="noopener noreferrer">Human skull SU39 from CT scan</a>.</p>
+        <p><strong>Original model licence:</strong> <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 4.0 International</a>, as stated in the user's downloaded Sketchfab ZIP. Copyright and model attribution remain with the original creator; the model is not relicensed under Honnett Ltd's PolyForm terms.</p>
+        <p><strong>Required attribution:</strong> This work is based on <a href="https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed" target="_blank" rel="noopener noreferrer">"Human skull SU39 from CT scan"</a> by <a href="https://sketchfab.com/SusanElaineJones" target="_blank" rel="noopener noreferrer">SusanElaineJones</a>, licensed under CC BY 4.0.</p>
+        <p><strong>Changes for browser use:</strong> The optional prepared GLB merges the source's three scene meshes, reduces triangles via approximately 1.5 mm vertex clustering, and replaces the original vertex colours with a neutral bone material. The application applies approximate scale and translation for a visual fit.</p>
+        <p><strong>Distribution:</strong> The viewer accepts the original Sketchfab ZIP or a prepared GLB as a local browser import. The GitHub Pages deployment does not bundle the skull asset; the user loads it into their browser, where it may be saved for subsequent visits. A prepared copy can be downloaded from the model-processing handoff, with the original licence text alongside it.</p>
+        <p className="credit-caution"><strong>Registration limitation:</strong> SU39 is a different CT individual, not the YaleNeuroConnect participant or Shen268 atlas source. Its fit in the explorer is a nonvalidated educational illustration; it is not an anatomical registration or a patient-specific combined scan.</p>
+        <div className="credit-links">
+          <a href="https://sketchfab.com/SusanElaineJones" target="_blank" rel="noopener noreferrer">Creator profile ↗</a>
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0 terms ↗</a>
+        </div>
       </div>
     </section>
 
