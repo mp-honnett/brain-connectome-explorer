@@ -6,19 +6,21 @@ const MNI_SCALE = 0.052;
 /**
  * The uploaded SU39 CT model is not from the Shen268 participant or template.
  * Its glTF scene already bakes the Sketchfab Y-up orientation.
- * Scale and translation below are an APPROXIMATE visual fit only.
+ * The SU39 default yaw is 180 degrees: its originally imported nose faced\n * posterior instead of anterior. This rotation and placement are an\n * APPROXIMATE visual fit only.
  * There is no MRI-based anatomical registration.
  */
 export default function SkullLayer({
   source,
   center,
   opacity,
-  wireframe
+  wireframe,
+  yawDegrees
 }: {
   source: THREE.Group;
   center: THREE.Vector3;
   opacity: number;
   wireframe: boolean;
+  yawDegrees: number;
 }) {
   const clone = useMemo(() => {
     const model = source.clone(true);
@@ -49,7 +51,19 @@ export default function SkullLayer({
     };
   }, [clone]);
 
+  // Rotate about the model's bounds centre, not the original glTF origin.
+  // This prevents the skull swinging away from the brain as yaw changes.
+  const pivot = useMemo(() => {
+    const bounds = new THREE.Box3().setFromObject(source);
+    return bounds.getCenter(new THREE.Vector3()).multiplyScalar(MNI_SCALE * 1.18);
+  }, [source]);
+  const yaw = THREE.MathUtils.degToRad(yawDegrees);
+
   return <group position={[-center.x, -center.y + 15 * MNI_SCALE, -center.z]}>
-    <primitive object={clone} scale={MNI_SCALE * 1.18}/>
+    <group position={pivot.toArray()} rotation={[0, yaw, 0]}>
+      <group position={[-pivot.x, -pivot.y, -pivot.z]}>
+        <primitive object={clone} scale={MNI_SCALE * 1.18}/>
+      </group>
+    </group>
   </group>;
 }
