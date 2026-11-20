@@ -4,7 +4,7 @@ import * as THREE from "three";
 const MNI_SCALE = 0.052;
 
 /**
- * The uploaded SU39 CT model is not from the Shen268 participant or template.
+ * Imported CT models are not from the Shen268 participant or template.
  * Its glTF scene already bakes the Sketchfab Y-up orientation.
  * The SU39 default yaw is 180 degrees: its originally imported nose faced\n * posterior instead of anterior. This rotation and placement are an\n * APPROXIMATE visual fit only.
  * There is no MRI-based anatomical registration.
@@ -25,6 +25,20 @@ export default function SkullLayer({
   const clone = useMemo(() => {
     const model = source.clone(true);
     model.traverse(object => {
+      if (object instanceof THREE.Points) {
+        // Source is POINTS (glTF primitive mode 0), not a triangle mesh.
+        // Honour its vertex colours and use an adjustable translucent point material.
+        object.material = new THREE.PointsMaterial({
+          size: .085,
+          sizeAttenuation: true,
+          vertexColors: true,
+          transparent: opacity < 1,
+          opacity,
+          depthWrite: false
+        });
+        object.renderOrder = 2;
+        return;
+      }
       if (!(object instanceof THREE.Mesh)) return;
       object.material = new THREE.MeshStandardMaterial({
         color: "#e5d9c5",
@@ -44,7 +58,7 @@ export default function SkullLayer({
   useEffect(() => {
     return () => {
       clone.traverse(object => {
-        if (object instanceof THREE.Mesh) {
+        if (object instanceof THREE.Mesh || object instanceof THREE.Points) {
           (object.material as THREE.Material).dispose();
         }
       });
