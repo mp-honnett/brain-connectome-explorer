@@ -1,108 +1,172 @@
 import { Html } from "@react-three/drei";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { LOBES, type LobeId, type LobeSelection } from "./lobePalette";
 
 /**
- * Gently deformed orientation guides, NOT cortical anatomical segmentation.
- * The template is a unit sphere; individual deformation rules avoid
- * the original perfectly round bubble appearance without introducing
- * false claims about gyri, sulci, or atlas-derived lobe boundaries.
+ * Educational, not a registered anatomical segmentation.
  *
- * Local coordinates: x lateral, y superior, z posterior.
- * Deformations are applied before bilateral mirroring in Scene x.
+ * Adjacent guide volumes are generated from overlapping implicit ellipsoids.
+ * In any shared area, the volume is assigned to the lobe with the strongest
+ * local field value. The partition boundaries are therefore shared, with no
+ * doubled translucent volume. This is NOT a mapped sulcal boundary.
+ *
+ * MNI +y is anterior and +z is superior; scene transforms to [x,z,-y].
  */
-function makeGuide(id:LobeId):THREE.BufferGeometry {
-  const geom=new THREE.SphereGeometry(1,36,24);
-  const pos=geom.getAttribute("position") as THREE.BufferAttribute;
-  const v=new THREE.Vector3();
-  for(let i=0;i<pos.count;i++){
-    v.fromBufferAttribute(pos,i);
-    const x=v.x,y=v.y,z=v.z;
-    switch(id){
-      case "frontal": {
-        // Posterior edge is flatter; taper gently toward lower frontal face.
-        const rear=z>0?1-.22*Math.pow(z,2):1;
-        const low=y<0?1+.10*y:1;
-        v.set(x*rear*low,y*(y>0?.93:1),z*rear);
-        break;
-      }
-      case "parietal": {
-        // Superior dome with a softened inferior face, not a ball.
-        const lower=y<0?1+.30*y:1;
-        v.set(x*(1+.08*y),y<0?y*.60:y*.95,z*lower);
-        break;
-      }
-      case "temporal": {
-        // Low almond: fuller anterior-midsection, taper at both ends.
-        const endTaper=1-.28*Math.pow(Math.abs(z),1.6);
-        v.set(x*endTaper,y*endTaper + .08*z,z);
-        break;
-      }
-      case "occipital": {
-        // Rounded posterior wedge with a shallow, flatter anterior surface.
-        const front=z<0?1+.24*z:1;
-        const inferior=y<0?1+.18*y:1;
-        v.set(x*front*inferior,y*front,z*.97);
-        break;
-      }
-      case "insula": {
-        // Internal narrow leaf-shaped guide, hidden in overview.
-        const ends=1-.24*Math.abs(z);
-        v.set(x*.85*ends,y*.86*ends,z);
-        break;
+const SCALE = .052;
+const STEP = 4; // millimetres: lightweight, smooth enough at overview scale
+const OUTER = LOBES.filter(lobe=>lobe.id!=="insula");
+type Profile = (typeof LOBES)[number];
+
+function strength(lobe:Profile,x:number,y:number,z:number):number {
+  const [cx,cy,cz]=lobe.center;
+  const [rx,ry,rz]=lobe.radii;
+  const dx=(x-cx)/rx,dy=(y-cy)/ry,dz=(z-cz)/rz;
+  switch(lobe.id){
+    case "frontal":
+      // Subtler inferior taper and a slightly broader forward dome.
+      return 1-dx*dx*(z<cz?1.12:1)-dy*dy*(y<cy?1.07:.94)-dz*dz;
+    case "parietal":
+      // Broad superior cap, flatter underside.
+      return 1-dx*dx-dy*dy-dz*dz*(z<cz?1.22:.94);
+    case "temporal":
+      // Low and elongated almond, tapering laterally at its ends.
+      return 1-dx*dx*(1+.22*dy*dy)-dy*dy-dz*dz*1.08;
+    case "occipital":
+      // Compact posterior wedge, with less bulk anteriorly.
+      return 1-dx*dx*(y>cy?1.16:1)-dy*dy-dz*dz;
+    case "insula":
+      return 1-dx*dx*1.25-dy*dy-dz*dz*1.1;
+  }
+}
+
+/** Positive exactly inside the part assigned to this lobe. */
+function partitionField(lobe:Profile,x:number,y:number,z:number):number {
+  const own=strength(lobe,x,y,z);
+  if(lobe.id==="insula")return own; // deep lobe is isolated when selected
+  let competing=-Infinity;
+  for(const other of OUTER){
+    if(other.id!==lobe.id)competing=Math.max(competing,strength(other,x,y,z));
+  }
+  // This field is nonpositive where another lobe has a greater claim;
+  // zero crossings become touching partition surfaces, not intersections.
+  return Math.min(own,(own-competing)*.5);
+}
+
+// Tetrahedral decomposition of a cube; no CSG dependency required.
+const CUBE_TETS=[
+  [0,5,1,6],[0,1,2,6],[0,2,3,6],
+  [0,3,7,6],[0,7,4,6],[0,4,5,6]
+] as const;
+const CORNERS=[
+  [0,0,0],[1,0,0],[1,1,0],[0,1,0],
+  [0,0,1],[1,0,1],[1,1,1],[0,1,1]
+] as const;
+type Vec=[number,number,number];
+
+function createVolume(lobe:Profile):THREE.BufferGeometry {
+  const [cx,cy,cz]=lobe.center;
+  const [rx,ry,rz]=lobe.radii;
+  const min:[number,number,number]=[
+    Math.max(0,Math.floor((cx-rx-STEP*2)/STEP)*STEP),
+    Math.floor((cy-ry-STEP*2)/STEP)*STEP,
+    Math.floor((cz-rz-STEP*2)/STEP)*STEP
+  ];
+  const count:[number,number,number]=[
+    Math.ceil((cx+rx+STEP*2-min[0])/STEP),
+    Math.ceil((cy+ry+STEP*2-min[1])/STEP),
+    Math.ceil((cz+rz+STEP*2-min[2])/STEP)
+  ];
+  const [nx,ny,nz]=count;
+  const sx=nx+1,sy=ny+1;
+  const idx=(i:number,j:number,k:number)=>i+sx*(j+sy*k);
+  const samples=new Float32Array(sx*sy*(nz+1));
+  for(let k=0;k<=nz;k++)for(let j=0;j<=ny;j++)for(let i=0;i<=nx;i++){
+    samples[idx(i,j,k)]=partitionField(lobe,min[0]+i*STEP,min[1]+j*STEP,min[2]+k*STEP);
+  }
+
+  const vertices:number[]=[];
+  const push=(p:Vec)=>vertices.push(p[0]*SCALE,p[2]*SCALE,-p[1]*SCALE);
+  const interp=(a:Vec,b:Vec,va:number,vb:number):Vec=>{
+    const t=Math.max(0,Math.min(1,va/(va-vb)));
+    return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+  };
+  const triangle=(a:Vec,b:Vec,c:Vec)=>{push(a);push(b);push(c)};
+  for(let k=0;k<nz;k++)for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+    const positions=CORNERS.map(([di,dj,dk])=>[
+      min[0]+(i+di)*STEP,min[1]+(j+dj)*STEP,min[2]+(k+dk)*STEP
+    ] as Vec);
+    const vals=CORNERS.map(([di,dj,dk])=>samples[idx(i+di,j+dj,k+dk)]);
+    const mn=Math.min(...vals),mx=Math.max(...vals);
+    if(mn>=0||mx<0)continue;
+    for(const tet of CUBE_TETS){
+      const inside=tet.filter(t=>vals[t]>=0);
+      const outside=tet.filter(t=>vals[t]<0);
+      if(!inside.length||!outside.length)continue;
+      const cut=(a:number,b:number)=>interp(positions[a],positions[b],vals[a],vals[b]);
+      if(inside.length===1){
+        const v=inside[0];
+        triangle(cut(v,outside[0]),cut(v,outside[1]),cut(v,outside[2]));
+      }else if(inside.length===3){
+        const v=outside[0];
+        triangle(cut(v,inside[0]),cut(v,inside[2]),cut(v,inside[1]));
+      }else{
+        const [a,b]=inside,[c,d]=outside;
+        const ac=cut(a,c),ad=cut(a,d),bc=cut(b,c),bd=cut(b,d);
+        triangle(ac,ad,bc);triangle(ad,bd,bc);
       }
     }
-    pos.setXYZ(i,v.x,v.y,v.z);
   }
-  geom.computeVertexNormals();
+  const geom=new THREE.BufferGeometry();
+  geom.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
+  // Smooth gradients from the implicit field give soft, non-faceted shading
+  // despite non-indexed marching-tetrahedron surfaces.
+  const normals:number[]=[];
+  const delta=1.2;
+  for(let i=0;i<vertices.length;i+=3){
+    const x=vertices[i]/SCALE,y=-vertices[i+2]/SCALE,z=vertices[i+1]/SCALE;
+    const gx=partitionField(lobe,x+delta,y,z)-partitionField(lobe,x-delta,y,z);
+    const gy=partitionField(lobe,x,y+delta,z)-partitionField(lobe,x,y-delta,z);
+    const gz=partitionField(lobe,x,y,z+delta)-partitionField(lobe,x,y,z-delta);
+    const len=Math.hypot(gx,gy,gz)||1;
+    normals.push(-gx/len,-gz/len,gy/len);
+  }
+  geom.setAttribute("normal",new THREE.Float32BufferAttribute(normals,3));
+  geom.computeBoundingSphere();
   return geom;
 }
 
-export default function LobeOverlay({
-  center,
-  selection
-}: {
-  center: THREE.Vector3;
-  selection: LobeSelection;
-}) {
-  const [hovered, setHovered] = useState<string | null>(null);
-  const geometries=useMemo(() => Object.fromEntries(
-    LOBES.map(lobe=>[lobe.id,makeGuide(lobe.id)])
+export default function LobeOverlay({center,selection}:{
+  center:THREE.Vector3;
+  selection:LobeSelection;
+}){
+  const [hovered,setHovered]=useState<string|null>(null);
+  const geometries=useMemo(()=>Object.fromEntries(
+    LOBES.map(lobe=>[lobe.id,createVolume(lobe)])
   ) as Record<LobeId,THREE.BufferGeometry>,[]);
+  useEffect(()=>()=>Object.values(geometries).forEach(g=>g.dispose()),[geometries]);
 
-  return <group>
-    {LOBES.flatMap(lobe => ([-1,1] as const).map(side => {
-      const id=side+"-"+lobe.id;
+  return <group position={[-center.x,-center.y,-center.z]}>
+    {LOBES.flatMap(lobe=>([-1,1] as const).map(side=>{
       const focused=selection===lobe.id;
-      // Insula is a hidden deep structure; show only when selected.
-      if(lobe.id==="insula"&&!focused) return null;
-      const visible=selection==="all"||focused;
-      const position:[number,number,number]=[
-        side*lobe.center[0]*.052-center.x,
-        lobe.center[2]*.052-center.y,
-        -lobe.center[1]*.052-center.z
+      if(lobe.id==="insula"&&!focused)return null;
+      if(selection!=="all"&&!focused)return null;
+      const id=side+"-"+lobe.id;
+      const name=(side<0?"Left":"Right")+" "+lobe.name;
+      const pos:[number,number,number]=[
+        side*lobe.center[0]*SCALE,lobe.center[2]*SCALE,-lobe.center[1]*SCALE
       ];
-      const scale:[number,number,number]=[
-        lobe.radii[0]*.052,
-        lobe.radii[2]*.052,
-        lobe.radii[1]*.052
-      ];
-      const geometry=geometries[lobe.id];
-      return <group key={id} position={position} rotation={[0,side*(lobe.id==="temporal"?-.12:lobe.id==="parietal"?.10:-.06),0]}>
-        <mesh geometry={geometry} scale={scale}
+      return <group key={id} scale={[side,1,1]}>
+        <mesh geometry={geometries[lobe.id]}
           onPointerOver={e=>{e.stopPropagation();setHovered(id)}}
           onPointerOut={()=>setHovered(null)}>
-          <meshBasicMaterial color={lobe.color} side={THREE.DoubleSide}
-            transparent opacity={focused?.22:visible?.085:.007} depthWrite={false}/>
+          <meshPhongMaterial color={lobe.color} side={THREE.DoubleSide}
+            shininess={12} specular="#334958" transparent
+            opacity={focused?.27:.15} depthWrite={false}/>
         </mesh>
-        {visible&&<mesh geometry={geometry} scale={scale.map(v=>v*1.012) as [number,number,number]}>
-          <meshBasicMaterial color={lobe.color} wireframe transparent
-            opacity={focused?.25:.07} depthWrite={false}/>
-        </mesh>}
-        {visible&&(hovered===id||focused)&&<Html distanceFactor={10} center
-          style={{pointerEvents:"none",whiteSpace:"nowrap"}}>
-          <span className="lobe-label">{side<0?"Left":"Right"} {lobe.name} · schematic guide</span>
+        {(focused||hovered===id)&&<Html position={[side*pos[0],pos[1],pos[2]]}
+          distanceFactor={10} center style={{pointerEvents:"none",whiteSpace:"nowrap"}}>
+          <span className="lobe-label">{name} · partitioned schematic guide</span>
         </Html>}
       </group>;
     }))}
