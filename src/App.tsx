@@ -43,6 +43,8 @@ export default function App(){
  const [condition,setCondition]=useState("");
  const [selected,setSelected]=useState(0);
  const [highlightedTarget,setHighlightedTarget]=useState<number|null>(null);
+ const [soloFocus,setSoloFocus]=useState(true);
+ const [focusCameraSerial,setFocusCameraSerial]=useState(0);
  const chooseRegion=(region:number)=>{setSelected(region);setHighlightedTarget(null)};
  const [threshold,setThreshold]=useState(.3);
  const [limit,setLimit]=useState(16);
@@ -110,11 +112,29 @@ export default function App(){
  async function importFile(file?:File){if(!file)return;try{importData(JSON.parse(await file.text()))}catch(e){setError("Import failed: "+String(e))}}
  const matrix=data?.conditions[condition];
  const edges=useMemo(()=>matrix?edgesForNode(matrix,selected,threshold,limit):[],[matrix,selected,threshold,limit]);
+ const focusedEdge=edges.find(e=>e.target===highlightedTarget)??null;
+ const chooseCorrelation=(target:number)=>{
+   setHighlightedTarget(previous=>{
+     if(previous===target)return null;
+     setFocusCameraSerial(serial=>serial+1);
+     return target;
+   });
+ };
  useEffect(()=>{if(highlightedTarget!==null&&!edges.some(e=>e.target===highlightedTarget))setHighlightedTarget(null)},[edges,highlightedTarget]);
  return <div className="app">
  <header><div className="brand-lockup"><img className="brand-logo" src={"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAsHCAoIBwsKCQoMDAsNEBsSEA8PECEYGRQbJyMpKScjJiUsMT81LC47LyUmNko3O0FDRkdGKjRNUkxEUj9FRkP/2wBDAQwMDBAOECASEiBDLSYtQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0P/wAARCABIAEgDASIAAhEBAxEB/8QAGgABAAMBAQEAAAAAAAAAAAAAAAIFBgQDAf/EAC8QAAICAgEDAwMDAgcAAAAAAAECAAMEEQUSITFBUWEGExQycYEiI0JSYpGx0eH/xAAaAQACAwEBAAAAAAAAAAAAAAAAAwECBAUG/8QAJBEAAgICAQMEAwAAAAAAAAAAAAECAxESBCExQRMyUYEU0fH/2gAMAwEAAhEDEQA/APOIkq62tsVK1LMx0APWLPZN4IxL3G+nQVBybTv/ACp6fzPS76dqK/2bnU/6u4mf8qrOMmV82lPGTPRPbLxbcO013Lo+QR4I+J14XDZOUoc6qQ+C3k/xHOyCWzfQfK2EY7N9CuiXV307YqbqvV29mXW5UW1vVYa7FKsvkGRC2FntZFd1dntZCIiMGiWf04FPI/1a2EJX95WTo49chstDiqWsU7Ht/PxF2rMGhVy2rayX3NchZhW4wr/SSSw9x7SHJc1XXQv4jq9j99630j5+ZL6ioWzBW1iFesjXzvyJV8ZxiZ2Pa5tKuh0FA+PWYaoVOtTl4ObTXS6lOfgvfsU8jVi32DfSOsD0PxOHkucFTmrEAZh2LnwP2nNi8g541MKgMchiUGvQe84M3DswbRXaVJI2Cplq6Fvif0i9PHi54s8dkarjbLLcKmy4guy7JA1K36mxlNKZAGmU9LfIM4eJGXlWJQllgoRgzaPYfE7vqbJUUpjg/wBTHqI9gPEoq3XekmUjU6uSlF/wz8RE6Z1xNHx5r43hvyWXbOOo/O/Amcml4PIqysEY1gVmrGireomXl50XxnqYubnRfGepSX3ZXI2FyHs1/hUdlnvxFVxW+7HvWpq17qw31D5mlC141LfbRURQTpRqZ7juJszN3WsaqW2e3lh/1FRvjKDXZITDkRnXJY1SPuDYlFr24NT5FhrBO+3QfWevFZFOXlXPnfbNp10dfgD2G50txBxgbePuZbQPDHYYTOurdZDg9W9HfvLQULs4f7LwjC/bV/fk2qBBWRT0Aa7dI7TJ8pj5FGU35LdbP3D+jSy4njs7Ey1ZtLSf1afYP8T1+qOn8anf6uvt/tFUv07dU85EUNU36p5TM7EROkdcSVbtW4etirDwQfEjEjuQ1kuuK5l/ulM20Gsr2YjwfmS5XmFtT8fEJ03Zn8dvYSjkkbodW1vpIOoh8aG2xmfEr33x9eC/v5D8DlSlmzSa1Da9D7yebxdHJMMjHtVWYdyO4b/2UWdlNm5LXMoUkAaE8kdkO0Zl/Y6lFx2kpReGLjxZJKUXiWDYK6YOIgvtGkUAs3rMzyuec7I6gCK17ID/AMzld2c7dmY/J3IyaeMq3s3llqOIqpbN5YiImo2CIiACIiACIiACIiACIiAH/9k="} width="52" height="52" alt="HeadSpin logo"/><strong className="brand product-name">HeadSpin</strong></div><nav className="site-nav" aria-label="Site sections"><button type="button" className={tab==="explore"?"site-tab active":"site-tab"} aria-current={tab==="explore"?"page":undefined} onClick={()=>chooseTab("explore")}>Explorer</button><button type="button" className={tab==="credits"?"site-tab active":"site-tab"} aria-current={tab==="credits"?"page":undefined} onClick={()=>chooseTab("credits")}>Credits &amp; Licences</button></nav><div className="header-right"><span>{data?"● Data loaded":"○ Awaiting verified data"}</span><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">YaleNeuroConnect ↗</a></div></header>
  <main>{tab==="credits"?<Credits metadata={data?.metadata}/>:<><section className="visual"><div className="intro"><h1>HeadSpin</h1><p>Explore region-to-region functional correlations through a spatial 3D network.</p></div>
- <div className="stage">{data&&matrix?<Scene nodes={data.nodes} edges={edges} selected={selected} onSelect={chooseRegion} layers={layers} snap={snap} skullModel={skullModel} highlightedTarget={highlightedTarget}/>:<div className="empty"><div className="orb">◎</div><h2>Ready for real brain data</h2><p>YaleNeuroConnect measurements are not bundled. Import a validated connectome JSON to activate the 3D viewer. No synthetic connections are shown as real measurements.</p><button onClick={()=>fileInput.current?.click()}>Import connectome JSON</button><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">Explore source dataset ↗</a></div>}</div>
+ <div className="stage">{data&&matrix?<Scene nodes={data.nodes} edges={edges} selected={selected} onSelect={chooseRegion} layers={layers} snap={snap} skullModel={skullModel} highlightedTarget={highlightedTarget} soloFocus={soloFocus} focusCameraSerial={focusCameraSerial}/>:<div className="empty"><div className="orb">◎</div><h2>Ready for real brain data</h2><p>YaleNeuroConnect measurements are not bundled. Import a validated connectome JSON to activate the 3D viewer. No synthetic connections are shown as real measurements.</p><button onClick={()=>fileInput.current?.click()}>Import connectome JSON</button><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">Explore source dataset ↗</a></div>}
+ {focusedEdge&&data&&<div className="focus-hud" role="status" aria-live="polite">
+   <div className="focus-hud-head"><span className="focus-hud-indicator" aria-hidden="true"/> <span>SELECTED CORRELATION</span></div>
+   <div className="focus-hud-nodes"><strong>{data.nodes[focusedEdge.source].label}</strong><span aria-hidden="true"> ↔ </span><strong>{data.nodes[focusedEdge.target].label}</strong></div>
+   <div className="focus-hud-bottom"><span className="focus-hud-score">r = {focusedEdge.value>=0?"+":""}{focusedEdge.value.toFixed(3)}</span>
+   <span className="focus-hud-sign">{focusedEdge.value>=0?"Positive":"Negative"} functional correlation</span></div>
+   <div className="focus-hud-actions">
+     <button type="button" onClick={()=>setFocusCameraSerial(v=>v+1)} title="Move the camera to the selected connection">Centre on pair</button>
+     <button type="button" onClick={()=>setHighlightedTarget(null)}>Clear focus</button>
+   </div>
+ </div>}</div>
  <div className="note"><b>Interpretation</b><p>Connections show correlation between measured fMRI time series, not physical fibre tracts or causal communication. Display thresholds are not statistical significance tests.</p></div></section>
  <aside aria-label="Explorer controls">
  <AccordionPanel section="camera" title="CAMERA VIEWS" open={activeSection==="camera"} onToggle={()=>toggleSection("camera")}>
@@ -156,7 +176,7 @@ export default function App(){
  </AccordionPanel>
  <AccordionPanel section="lobes" title="ANATOMY GUIDE · SCHEMATIC" className="lobe-panel" open={activeSection==="lobes"} onToggle={()=>toggleSection("lobes")}>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.lobeGuides} onChange={e=>updateLayer({lobeGuides:e.target.checked})}/> Show coloured lobe guides</span></label>
- <p className="muted">Rounded coloured volumes illustrate approximate lobe locations in both hemispheres. They are not measured lobe boundaries, cortical sulci, or atlas-verified Shen268 classifications.</p>
+ <p className="muted">Soft coloured guide volumes suggest approximate lobe positions. They are schematic, not measured cortical boundaries or validated Shen268 lobe classifications.</p>
  <div className="lobe-legend" role="group" aria-label="Select a lobe to highlight">
   <button type="button" disabled={!layers.lobeGuides} className={layers.lobeSelection==="all"?"lobe-choice active":"lobe-choice"} aria-pressed={layers.lobeSelection==="all"} onClick={()=>updateLayer({lobeSelection:"all"})}>
     <span className="lobe-swatch all-swatches" aria-hidden="true">●</span><span>All lobes</span>
@@ -170,15 +190,18 @@ export default function App(){
  <p className="muted lobe-disclaimer">Tweenbrain visualisation palette, not standard neurological colour coding. Shen268 parcels remain unclassified pending a verified anatomical atlas mapping. Click a coloured legend item to highlight its bilateral guides.</p>
  </AccordionPanel>
  <AccordionPanel section="conditions" title="CONDITIONS" open={activeSection==="conditions"} onToggle={()=>toggleSection("conditions")}><label>Condition</label><select disabled={!data} value={condition} onChange={e=>setCondition(e.target.value)}>{Object.keys(data?.conditions||{}).map(k=><option value={k} key={k}>{k}</option>)}</select><label>Minimum absolute correlation <b>{threshold.toFixed(2)}</b></label><input type="range" min="0" max=".9" step=".05" value={threshold} onChange={e=>setThreshold(+e.target.value)}/><label>Maximum visible connections <b>{limit}</b></label><input type="range" min="5" max="40" value={limit} onChange={e=>setLimit(+e.target.value)}/><p className="muted">Showing {edges.length} connections from the selected region.</p></AccordionPanel>
- <AccordionPanel section="inspector" title="REGION INSPECTOR" open={activeSection==="inspector"} onToggle={()=>toggleSection("inspector")}><label>Selected region</label><select disabled={!data} value={selected} onChange={e=>chooseRegion(+e.target.value)}>{(data?.nodes||[]).map((n,i)=><option key={n.id} value={i}>{n.label}</option>)}</select><h2>{data?.nodes[selected]?.label||"No region selected"}</h2><p className="muted">{data?.nodes[selected]? "Atlas ID "+data.nodes[selected].id+" · "+data.nodes[selected].position_mm.map(x=>x.toFixed(1)).join(", ")+" mm":"Select a node after loading data."}</p><p className="muted">Select a correlation to highlight its connection and both regions in the 3D diagram. Only connections passing the current threshold are shown.</p>
+ <AccordionPanel section="inspector" title="REGION INSPECTOR" open={activeSection==="inspector"} onToggle={()=>toggleSection("inspector")}><label>Selected region</label><select disabled={!data} value={selected} onChange={e=>chooseRegion(+e.target.value)}>{(data?.nodes||[]).map((n,i)=><option key={n.id} value={i}>{n.label}</option>)}</select><h2>{data?.nodes[selected]?.label||"No region selected"}</h2><p className="muted">{data?.nodes[selected]? "Atlas ID "+data.nodes[selected].id+" · "+data.nodes[selected].position_mm.map(x=>x.toFixed(1)).join(", ")+" mm":"Select a node after loading data."}</p><p className="muted">Select a correlation below to isolate its two endpoints and connection in the 3D view. The selected pair and correlation value also appear on the diagram.</p>
  {edges.length>0&&<div className="correlation-list" role="group" aria-label="Correlations for selected region">
  {edges.map(e=><button type="button" key={e.target} className={highlightedTarget===e.target?"connection correlation-choice active":"connection correlation-choice"}
  aria-pressed={highlightedTarget===e.target}
- onClick={()=>setHighlightedTarget(previous=>previous===e.target?null:e.target)}>
+ onClick={()=>chooseCorrelation(e.target)}>
  <span className="correlation-label">{data?.nodes[e.target].label}</span>
  <b className={highlightedTarget===e.target?"highlighted-value":e.value>=0?"positive":"negative"}>{e.value>=0?"+":""}{e.value.toFixed(3)}</b>
  </button>)}</div>}
- {highlightedTarget!==null&&edges.some(e=>e.target===highlightedTarget)&&<button type="button" className="clear-highlight" onClick={()=>setHighlightedTarget(null)}>Clear highlighted connection</button>}</AccordionPanel>
+ {focusedEdge&&<div className="focus-inspector-controls">
+   <label className="layer-toggle"><span><input type="checkbox" checked={soloFocus} onChange={e=>setSoloFocus(e.target.checked)}/> Hide other connections while focused</span></label>
+   <button type="button" className="clear-highlight" onClick={()=>setHighlightedTarget(null)}>Clear highlighted connection</button>
+ </div>}</AccordionPanel>
  <AccordionPanel section="provenance" title="DATA PROVENANCE" open={activeSection==="provenance"} onToggle={()=>toggleSection("provenance")}><p>{data?.metadata.source||"YaleNeuroConnect (intended source)"}</p><p className="muted">{data?data.metadata.dataType+" · "+data.metadata.transform:"No source matrices have been installed or independently verified."}</p>{data?.metadata.note&&<p className="error">{data.metadata.note}</p>}<button className="secondary" onClick={()=>fileInput.current?.click()}>Import / replace JSON</button><input hidden type="file" accept=".json,application/json" ref={fileInput} onChange={e=>importFile(e.target.files?.[0])}/>{error&&<p className="error">{error}</p>}</AccordionPanel></aside></>}</main>
  <footer>Educational prototype · Not for diagnosis · <button type="button" className="footer-credits" onClick={()=>chooseTab("credits")}>Credits &amp; Licences</button> · <a href="https://www.nature.com/articles/s41597-026-08749-0" target="_blank" rel="noreferrer">Scientific source</a></footer>
  </div>;
