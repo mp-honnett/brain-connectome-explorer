@@ -10,10 +10,6 @@ import type { Dataset, Node } from "./types";
  * orientation *estimate*. A structural atlas overlap is needed before
  * assigning a definitive anatomical area or gyrus name.
  *
- * Territory ranges: Z. Wan (2021), University of Warwick PhD thesis,
- * "Analysis of Neuroimaging with Big Data to Understand Brain Systems
- * Involved in Emotion", Appendix A1 (Shen atlas, 268 nodes).
- * https://wrap.warwick.ac.uk/166793/
  */
 
 export type LocationDescription = {
@@ -25,36 +21,11 @@ export type LocationDescription = {
   coordinate: [number, number, number];
 };
 
-type Territory =
-  | "prefrontal" | "motor" | "insula" | "parietal" | "temporal"
-  | "occipital" | "limbic" | "cerebellar" | "basal" | "brainstem";
-
-const GROUPS: ReadonlyArray<{name:Territory; ranges: readonly [number,number][]}> = [
-  {name:"prefrontal",ranges:[[1,22],[134,157]]},
-  {name:"motor",ranges:[[23,33],[158,167]]},
-  {name:"insula",ranges:[[34,37],[168,170]]},
-  {name:"parietal",ranges:[[38,50],[171,184]]},
-  {name:"temporal",ranges:[[51,71],[185,202]]},
-  {name:"occipital",ranges:[[72,82],[203,216]]},
-  {name:"limbic",ranges:[[83,99],[217,235]]},
-  {name:"cerebellar",ranges:[[100,119],[236,256]]},
-  {name:"basal",ranges:[[120,128],[257,264]]},
-  {name:"brainstem",ranges:[[129,133],[265,268]]}
-];
-
-function territoryFor(id:number):Territory|undefined {
-  return GROUPS.find(group=>group.ranges.some(([first,last])=>id>=first&&id<=last))?.name;
-}
-
-/** Only interpret Shen-specific numbering for the expected 268-node atlas. */
-function canUseTerritoryRanges(dataset:Dataset):boolean {
-  return dataset.nodes.length===268
-    && dataset.nodes[0]?.id===1
-    && dataset.nodes[267]?.id===268
-    && dataset.nodes.every((node,index)=>node.id===index+1)
-    && /shen\s*268|yale\s*neuro\s*connect/i.test(dataset.metadata.source);
-}
-
+/**
+ * Only broad coordinate orientation is inferred. Never infer a definitive
+ * parcel-to-anatomical label from numeric Shen ID without a verified
+ * atlas crosswalk. No speculative label-number ranges are used.
+ */
 export function describeNodeLocation(node:Node,dataset:Dataset):LocationDescription {
   const coordinate=node.position_mm;
   const [x,y,z]=coordinate;
@@ -65,63 +36,45 @@ export function describeNodeLocation(node:Node,dataset:Dataset):LocationDescript
   const position=[hemisphere,horizontal,vertical,medial].join(" · ");
 
   const prefix=hemisphere==="Midline"?"Midline":hemisphere;
-  const group=canUseTerritoryRanges(dataset)?territoryFor(node.id):undefined;
+  const isShen=dataset.nodes.length===268 && dataset.nodes.some(n=>n.id===node.id) && /shen|yale/i.test(dataset.metadata.source);
   let scientificTerm="Anatomical region not assigned";
   let plainEnglish="The coordinate locates this point in the brain, but an independently checked anatomical label is not available.";
 
-  switch(group){
-    case "prefrontal":
-      if(y>36&&z<0){
-        scientificTerm=prefix+" orbitofrontal region (ventral prefrontal cortex)";
-        plainEnglish="On the underside of the frontal lobe, above and behind the eye socket.";
-      }else{
-        scientificTerm=prefix+" prefrontal cortex";
-        plainEnglish="Toward the front of the brain, behind the forehead.";
-      }
-      break;
-    case "motor":
-      scientificTerm=prefix+" peri-Rolandic / sensorimotor region";
-      plainEnglish="In the upper middle part of the brain, near the groove separating frontal and parietal areas.";
-      break;
-    case "insula":
-      scientificTerm=prefix+" insular cortex";
-      plainEnglish="Deep inside the side of the brain, concealed beneath the outer cortical folds.";
-      break;
-    case "parietal":
-      scientificTerm=prefix+" parietal cortex";
-      plainEnglish="Toward the upper back part of the brain.";
-      break;
-    case "temporal":
-      scientificTerm=prefix+" temporal cortex";
-      plainEnglish="Along the lower side of the brain, roughly above the ear.";
-      break;
-    case "occipital":
-      scientificTerm=prefix+" occipital cortex";
-      plainEnglish="Toward the back of the brain.";
-      break;
-    case "limbic":
-      scientificTerm=prefix+" limbic-associated region";
-      plainEnglish="Toward the brain's inner surface or deeper temporal areas; the precise structure needs atlas verification.";
-      break;
-    case "cerebellar":
-      scientificTerm=prefix+" cerebellar region";
-      plainEnglish="In the cerebellum, underneath the rear of the larger brain.";
-      break;
-    case "basal":
-      scientificTerm=prefix+" basal / subcortical region";
-      plainEnglish="Deep inside the brain, below the outer cerebral cortex.";
-      break;
-    case "brainstem":
-      scientificTerm="Brainstem region";
-      plainEnglish="At the base of the brain, near the connection with the spinal cord.";
-      break;
+  // A centroid alone cannot establish a cortical gyrus. These terms are
+  // indicative coordinate territories, NOT verified parcel assignments.
+  if(isShen){
+    if(y>32 && z<3 && Math.abs(x)<42){
+      scientificTerm=prefix+" orbitofrontal / ventral prefrontal vicinity";
+      plainEnglish="Low in the front of the brain, approximately above and behind the eye socket.";
+    }else if(y>32 && z>=3){
+      scientificTerm=prefix+" anterior frontal vicinity";
+      plainEnglish="Toward the front of the brain, roughly behind the forehead.";
+    }else if(y< -70 && z> -12 && Math.abs(x)>18){
+      scientificTerm=prefix+" posterior occipital vicinity";
+      plainEnglish="Near the back of the brain, where visual-processing regions are found.";
+    }else if(y< -35 && z>38){
+      scientificTerm=prefix+" dorsal parietal vicinity";
+      plainEnglish="Toward the upper-back portion of the brain.";
+    }else if(y> -48 && y<35 && z>39){
+      scientificTerm=prefix+" dorsal frontoparietal vicinity";
+      plainEnglish="Near the upper central surface of the brain.";
+    }else if(Math.abs(x)>36 && z< -2 && y> -82 && y<37){
+      scientificTerm=prefix+" lateral inferior temporal vicinity";
+      plainEnglish="Toward the lower side of the brain, approximately above the ear.";
+    }else if(Math.abs(x)<22 && z< -18 && y< -22){
+      scientificTerm=prefix+" inferior midline / posterior-fossa vicinity";
+      plainEnglish="Near deeper, lower structures. A precise region cannot be inferred from this coordinate alone.";
+    }else{
+      scientificTerm=prefix+" cerebral or subcortical vicinity";
+      plainEnglish="Broad location inferred from the three coordinate axes; a precise anatomical area needs a validated atlas lookup.";
+    }
   }
 
   return {
     scientificTerm,
     plainEnglish,
     position,
-    source:group?"indicative-territory":"coordinates-only",
+    source:isShen?"indicative-territory":"coordinates-only",
     hemisphere,
     coordinate
   };
