@@ -14,7 +14,7 @@ import { LOBES, type LobeId, type LobeSelection } from "./lobePalette";
  * MNI +y is anterior and +z is superior; scene transforms to [x,z,-y].
  */
 const SCALE = .052;
-const STEP = 4; // millimetres: lightweight, smooth enough at overview scale
+const STEP = 5; // millimetres: lightweight, smooth enough at overview scale
 const OUTER = LOBES.filter(lobe=>lobe.id!=="insula");
 type Profile = (typeof LOBES)[number];
 
@@ -154,7 +154,7 @@ export default function LobeOverlay({center,selection}:{
       const id=side+"-"+lobe.id;
       const name=(side<0?"Left":"Right")+" "+lobe.name;
       const pos:[number,number,number]=[
-        side*lobe.center[0]*SCALE,lobe.center[2]*SCALE,-lobe.center[1]*SCALE
+        lobe.center[0]*SCALE,lobe.center[2]*SCALE,-lobe.center[1]*SCALE
       ];
       return <group key={id} scale={[side,1,1]}>
         <mesh geometry={geometries[lobe.id]}
@@ -164,7 +164,7 @@ export default function LobeOverlay({center,selection}:{
             shininess={12} specular="#334958" transparent
             opacity={focused?.27:.15} depthWrite={false}/>
         </mesh>
-        {(focused||hovered===id)&&<Html position={[side*pos[0],pos[1],pos[2]]}
+        {(focused||hovered===id)&&<Html position={pos}
           distanceFactor={10} center style={{pointerEvents:"none",whiteSpace:"nowrap"}}>
           <span className="lobe-label">{name} · partitioned schematic guide</span>
         </Html>}
