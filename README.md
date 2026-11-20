@@ -56,4 +56,14 @@ The GitHub Pages build also creates [`/legal/third-party-notices.txt`](https://m
 
 **Copyright & trademarks:** Copyright (c) 2026 Honnett Ltd. Tweenbrain is a trademark of Honnett Ltd. See the required [NOTICE.txt](NOTICE.txt) and [licensing scope](LICENSING.md). The software licence does not grant independent rights to use the Honnett Ltd or Tweenbrain marks.
 
-**Outstanding items:** The reuse licence for the exact Shen268 atlas NIfTI needs authoritative confirmation. No external Sketchfab or Thingiverse skull model has been incorporated.
+**Outstanding items:** The reuse licence for the exact Shen268 atlas NIfTI needs authoritative confirmation. The CT-derived SU39 skull is optionally user-imported (not bundled or scientifically registered).
+
+## Optional real CT-derived skull layer
+
+The optional **Human skull SU39 from CT scan** layer can be imported directly in the explorer's **REAL CT SKULL · OPTIONAL LAYER** sidebar panel. It accepts either the original Sketchfab `scene.gltf` + `scene.bin` ZIP (as downloaded from the source) or an optimized GLB. The browser can remember the imported file locally when storage permits; no server upload is performed. The layer is independently toggleable with opacity and wireframe controls alongside the existing procedural outer head and atlas envelope.
+
+**Model attribution:** [Human skull SU39 from CT scan](https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed), [SusanElaineJones](https://sketchfab.com/SusanElaineJones), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The supplied original `license.txt` is preserved in the prepared-model handoff ZIP. The optional optimized GLB merges the three original meshes, reduces geometry and changes the material to a neutral bone colour.
+
+**Not anatomically registered:** The source CT comes from a different individual, and alignment to the Shen268/YaleNeuroConnect scene is an approximate scale/translation for educational orientation only. It must not be interpreted as patient-specific anatomy or a medically validated registration. The skull retains its **CC BY 4.0** rights separately from Honnett Ltd's PolyForm-licensed application code.
+
+
