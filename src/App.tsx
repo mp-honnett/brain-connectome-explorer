@@ -1,10 +1,35 @@
-import {useEffect,useMemo,useRef,useState} from "react";
+import {useEffect,useMemo,useRef,useState, type ReactNode} from "react";
 import type * as THREE from "three";
 import { loadSkullModel, readSavedSkull, removeSavedSkull, saveSkullLocally } from "./skullLoader";
 import Scene, {type LayerSettings,type CameraSnap,type ViewDirection} from "./Scene";
 import Credits from "./Credits";
 import { LOBES, UNCLASSIFIED_LOBE } from "./lobePalette";
 import {type Dataset,validateData,edgesForNode} from "./types";
+type SidebarSection = "camera" | "anatomy" | "skull" | "lobes" | "conditions" | "inspector" | "provenance";
+
+/** Single-open sidebar accordion. All sections begin collapsed. */
+function AccordionPanel({section,title,open,onToggle,children,className=""}:{
+  section:SidebarSection;
+  title:string;
+  open:boolean;
+  onToggle:()=>void;
+  children:ReactNode;
+  className?:string;
+}){
+  const headingId=`sidebar-${section}-heading`;
+  const contentId=`sidebar-${section}-content`;
+  return <section className={`panel accordion-panel ${className}`.trim()}>
+    <h2 className="accordion-heading">
+      <button type="button" id={headingId} aria-expanded={open} aria-controls={contentId} onClick={onToggle}>
+        <span>{title}</span><span className="accordion-chevron" aria-hidden="true"/>
+      </button>
+    </h2>
+    <div id={contentId} className="accordion-body" role="region" aria-labelledby={headingId} hidden={!open}>
+      {children}
+    </div>
+  </section>;
+}
+
 export default function App(){
  const [tab,setTab]=useState<"explore"|"credits">(()=>typeof window!=="undefined"&&window.location.hash==="#credits"?"credits":"explore");
  useEffect(()=>{
@@ -20,6 +45,8 @@ export default function App(){
  const [threshold,setThreshold]=useState(.3);
  const [limit,setLimit]=useState(16);
  const [snap,setSnap]=useState<CameraSnap>({direction:"caudal",serial:0});
+ const [activeSection,setActiveSection]=useState<SidebarSection|null>(null);
+ const toggleSection=(section:SidebarSection)=>setActiveSection(previous=>previous===section?null:section);
  const chooseView=(direction:ViewDirection)=>setSnap(prev=>({direction,serial:prev.serial+1}));
  const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.16,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all",skull:false,skullOpacity:.32,skullWireframe:false,skullYaw:(()=>{try{const saved=window.localStorage.getItem("tweenbrain-skull-yaw-v1");return saved===null?180:Math.max(0,Math.min(360,Number(saved)||0))}catch{return 180}})()});
  const updateLayer=(part:Partial<LayerSettings>)=>setLayers(previous=>({...previous,...part}));
@@ -86,13 +113,14 @@ export default function App(){
  <main>{tab==="credits"?<Credits metadata={data?.metadata}/>:<><section className="visual"><div className="intro"><p className="eyebrow">INTERACTIVE CONNECTOME</p><h1>Explore the connected brain.</h1><p>Explore region-to-region functional correlations through a spatial 3D network.</p></div>
  <div className="stage">{data&&matrix?<Scene nodes={data.nodes} edges={edges} selected={selected} onSelect={setSelected} layers={layers} snap={snap} skullModel={skullModel}/>:<div className="empty"><div className="orb">◎</div><h2>Ready for real brain data</h2><p>YaleNeuroConnect measurements are not bundled. Import a validated connectome JSON to activate the 3D viewer. No synthetic connections are shown as real measurements.</p><button onClick={()=>fileInput.current?.click()}>Import connectome JSON</button><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">Explore source dataset ↗</a></div>}</div>
  <div className="note"><b>Interpretation</b><p>Connections show correlation between measured fMRI time series, not physical fibre tracts or causal communication. Display thresholds are not statistical significance tests.</p></div></section>
- <aside><div className="panel"><p className="eyebrow">CAMERA VIEWS</p>
+ <aside aria-label="Explorer controls">
+ <AccordionPanel section="camera" title="CAMERA VIEWS" open={activeSection==="camera"} onToggle={()=>toggleSection("camera")}>
  <div className="view-buttons">
  {([["rostral","Rostral · Front"],["caudal","Caudal · Back"],["top","Dorsal · Top"],["bottom","Ventral · Bottom"],["left-lateral","Left Lateral · Left Side"],["right-lateral","Right Lateral · Right Side"]] as const).map(([direction,label])=>
  <button key={direction} type="button" className={snap.direction===direction?"view-button active":"view-button"} onClick={()=>chooseView(direction)} aria-label={label} aria-pressed={snap.direction===direction}>{label}</button>)}
  </div>
- <p className="muted">Snap to a standard anatomical direction, then drag to rotate freely. Left and right lateral views are from the subject's left and right, respectively.</p></div>
- <div className="panel"><p className="eyebrow">ANATOMICAL LAYERS</p>
+ <p className="muted">Snap to a standard anatomical direction, then drag to rotate freely. Left and right lateral views are from the subject's left and right, respectively.</p></AccordionPanel>
+ <AccordionPanel section="anatomy" title="ANATOMICAL LAYERS" open={activeSection==="anatomy"} onToggle={()=>toggleSection("anatomy")}>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.head} onChange={e=>updateLayer({head:e.target.checked})}/> Transparent human head</span></label>
  <label>Head opacity <b>{Math.round(layers.headOpacity*100)}%</b></label>
  <input type="range" min="0.02" max="0.65" step="0.01" disabled={!layers.head} value={layers.headOpacity} onChange={e=>updateLayer({headOpacity:Number(e.target.value)})}/>
@@ -104,9 +132,8 @@ export default function App(){
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.connections} onChange={e=>updateLayer({connections:e.target.checked})}/> Functional correlations</span></label>
  <label>Brain transparency <b>{Math.round((1-layers.opacity)*100)}%</b></label>
  <input type="range" min="0.05" max="0.8" step="0.05" disabled={!layers.anatomy} value={layers.opacity} onChange={e=>updateLayer({opacity:Number(e.target.value)})}/>
- <p className="muted">The translucent surface is a smoothed outline derived from the Shen268 atlas, not a detailed subject MRI. The connecting lines are statistical fMRI relationships, not axon pathways.</p></div>
- <div className="panel skull-panel">
- <p className="eyebrow">REAL CT SKULL · OPTIONAL LAYER</p>
+ <p className="muted">The translucent surface is a smoothed outline derived from the Shen268 atlas, not a detailed subject MRI. The connecting lines are statistical fMRI relationships, not axon pathways.</p></AccordionPanel>
+ <AccordionPanel section="skull" title="REAL CT SKULL · OPTIONAL LAYER" className="skull-panel" open={activeSection==="skull"} onToggle={()=>toggleSection("skull")}>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.skull} disabled={!skullModel} onChange={e=>updateLayer({skull:e.target.checked})}/> Human skull SU39 (CT scan)</span></label>
  <p className="muted">Use the model from SusanElaineJones on Sketchfab. Import the original ZIP or the prepared GLB. The model loads in your browser and is never uploaded to Honnett.</p>
  <button type="button" className="secondary" disabled={skullBusy} onClick={()=>skullInput.current?.click()}>{skullBusy?"Loading skull…":skullModel?"Replace skull model":"Import skull ZIP / GLB"}</button>
@@ -123,9 +150,8 @@ export default function App(){
  {skullError&&<p className="error" role="status">{skullError}</p>}
  <p className="muted">Approximate visual alignment only: SU39 is a different CT subject and has <strong>not</strong> been registered to Shen268 or YaleNeuroConnect.</p>
  <p className="skull-attribution">Based on <a href="https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed" target="_blank" rel="noopener noreferrer">Human skull SU39 from CT scan</a> by <a href="https://sketchfab.com/SusanElaineJones" target="_blank" rel="noopener noreferrer">SusanElaineJones</a>. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Prepared GLB simplifies triangles and changes the material. Rights for this skull are separate from the software licence.</p>
- </div>
- <div className="panel lobe-panel">
- <p className="eyebrow">ANATOMY GUIDE · SCHEMATIC</p>
+ </AccordionPanel>
+ <AccordionPanel section="lobes" title="ANATOMY GUIDE · SCHEMATIC" className="lobe-panel" open={activeSection==="lobes"} onToggle={()=>toggleSection("lobes")}>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.lobeGuides} onChange={e=>updateLayer({lobeGuides:e.target.checked})}/> Show coloured lobe guides</span></label>
  <p className="muted">Rounded coloured volumes illustrate approximate lobe locations in both hemispheres. They are not measured lobe boundaries, cortical sulci, or atlas-verified Shen268 classifications.</p>
  <div className="lobe-legend" role="group" aria-label="Select a lobe to highlight">
@@ -139,10 +165,10 @@ export default function App(){
  </div>
  {layers.lobeSelection!=="all"&&<p className="muted lobe-description"><strong>{LOBES.find(l=>l.id===layers.lobeSelection)?.name}:</strong> {LOBES.find(l=>l.id===layers.lobeSelection)?.description}</p>}
  <p className="muted lobe-disclaimer">Tweenbrain visualisation palette, not standard neurological colour coding. Shen268 parcels remain unclassified pending a verified anatomical atlas mapping. Click a coloured legend item to highlight its bilateral guides.</p>
- </div>
- <div className="panel"><p className="eyebrow">CONDITIONS</p><label>Condition</label><select disabled={!data} value={condition} onChange={e=>setCondition(e.target.value)}>{Object.keys(data?.conditions||{}).map(k=><option value={k} key={k}>{k}</option>)}</select><label>Minimum absolute correlation <b>{threshold.toFixed(2)}</b></label><input type="range" min="0" max=".9" step=".05" value={threshold} onChange={e=>setThreshold(+e.target.value)}/><label>Maximum visible connections <b>{limit}</b></label><input type="range" min="5" max="40" value={limit} onChange={e=>setLimit(+e.target.value)}/><p className="muted">Showing {edges.length} connections from the selected region.</p></div>
- <div className="panel"><p className="eyebrow">REGION INSPECTOR</p><label>Selected region</label><select disabled={!data} value={selected} onChange={e=>setSelected(+e.target.value)}>{(data?.nodes||[]).map((n,i)=><option key={n.id} value={i}>{n.label}</option>)}</select><h2>{data?.nodes[selected]?.label||"No region selected"}</h2><p className="muted">{data?.nodes[selected]? "Atlas ID "+data.nodes[selected].id+" · "+data.nodes[selected].position_mm.map(x=>x.toFixed(1)).join(", ")+" mm":"Select a node after loading data."}</p>{edges.slice(0,8).map(e=><div className="connection" key={e.target}><span>{data?.nodes[e.target].label}</span><b className={e.value>=0?"positive":"negative"}>{e.value>=0?"+":""}{e.value.toFixed(3)}</b></div>)}</div>
- <div className="panel"><p className="eyebrow">DATA PROVENANCE</p><p>{data?.metadata.source||"YaleNeuroConnect (intended source)"}</p><p className="muted">{data?data.metadata.dataType+" · "+data.metadata.transform:"No source matrices have been installed or independently verified."}</p>{data?.metadata.note&&<p className="error">{data.metadata.note}</p>}<button className="secondary" onClick={()=>fileInput.current?.click()}>Import / replace JSON</button><input hidden type="file" accept=".json,application/json" ref={fileInput} onChange={e=>importFile(e.target.files?.[0])}/>{error&&<p className="error">{error}</p>}</div></aside></>}</main>
+ </AccordionPanel>
+ <AccordionPanel section="conditions" title="CONDITIONS" open={activeSection==="conditions"} onToggle={()=>toggleSection("conditions")}><label>Condition</label><select disabled={!data} value={condition} onChange={e=>setCondition(e.target.value)}>{Object.keys(data?.conditions||{}).map(k=><option value={k} key={k}>{k}</option>)}</select><label>Minimum absolute correlation <b>{threshold.toFixed(2)}</b></label><input type="range" min="0" max=".9" step=".05" value={threshold} onChange={e=>setThreshold(+e.target.value)}/><label>Maximum visible connections <b>{limit}</b></label><input type="range" min="5" max="40" value={limit} onChange={e=>setLimit(+e.target.value)}/><p className="muted">Showing {edges.length} connections from the selected region.</p></AccordionPanel>
+ <AccordionPanel section="inspector" title="REGION INSPECTOR" open={activeSection==="inspector"} onToggle={()=>toggleSection("inspector")}><label>Selected region</label><select disabled={!data} value={selected} onChange={e=>setSelected(+e.target.value)}>{(data?.nodes||[]).map((n,i)=><option key={n.id} value={i}>{n.label}</option>)}</select><h2>{data?.nodes[selected]?.label||"No region selected"}</h2><p className="muted">{data?.nodes[selected]? "Atlas ID "+data.nodes[selected].id+" · "+data.nodes[selected].position_mm.map(x=>x.toFixed(1)).join(", ")+" mm":"Select a node after loading data."}</p>{edges.slice(0,8).map(e=><div className="connection" key={e.target}><span>{data?.nodes[e.target].label}</span><b className={e.value>=0?"positive":"negative"}>{e.value>=0?"+":""}{e.value.toFixed(3)}</b></div>)}</AccordionPanel>
+ <AccordionPanel section="provenance" title="DATA PROVENANCE" open={activeSection==="provenance"} onToggle={()=>toggleSection("provenance")}><p>{data?.metadata.source||"YaleNeuroConnect (intended source)"}</p><p className="muted">{data?data.metadata.dataType+" · "+data.metadata.transform:"No source matrices have been installed or independently verified."}</p>{data?.metadata.note&&<p className="error">{data.metadata.note}</p>}<button className="secondary" onClick={()=>fileInput.current?.click()}>Import / replace JSON</button><input hidden type="file" accept=".json,application/json" ref={fileInput} onChange={e=>importFile(e.target.files?.[0])}/>{error&&<p className="error">{error}</p>}</AccordionPanel></aside></>}</main>
  <footer>© 2026 <a href="https://www.honnett.com" target="_blank" rel="noopener noreferrer">Honnett Ltd</a> · Tweenbrain is a trademark of Honnett Ltd · Educational prototype · Not for diagnosis · <button type="button" className="footer-credits" onClick={()=>chooseTab("credits")}>Credits &amp; Licences</button> · <a href="https://www.nature.com/articles/s41597-026-08749-0" target="_blank" rel="noreferrer">Scientific source</a></footer>
  </div>;
 }
