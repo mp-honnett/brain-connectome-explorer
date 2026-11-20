@@ -6,10 +6,11 @@ import { LOBES, type LobeId, type LobeSelection } from "./lobePalette";
 /**
  * Educational, not a registered anatomical segmentation.
  *
- * Adjacent guide volumes are generated from overlapping implicit ellipsoids.
- * In any shared area, the volume is assigned to the lobe with the strongest
- * local field value. The partition boundaries are therefore shared, with no
- * doubled translucent volume. This is NOT a mapped sulcal boundary.
+ * Outer cerebral lobes are carved from ONE shared, rounded brain envelope.
+ * Within that envelope each point is assigned to its strongest schematic
+ * lobe field. Their volumes meet at shared boundaries instead of leaking
+ * beyond the cranium or intersecting translucent ellipsoids.
+ * This is NOT an atlas segmentation or a mapped sulcal boundary.
  *
  * MNI +y is anterior and +z is superior; scene transforms to [x,z,-y].
  */
@@ -40,17 +41,34 @@ function strength(lobe:Profile,x:number,y:number,z:number):number {
   }
 }
 
-/** Positive exactly inside the part assigned to this lobe. */
+/**
+ * Schematic cerebral outline in MNI-like millimetres.
+ * Its lower and anterior ends taper rather than forming detached balls.
+ * Importantly this is a shared boundary for ALL four outer lobes.
+ */
+function brainEnvelope(x:number,y:number,z:number):number {
+  const y0=-14,z0=19;
+  const anterior=y>y0;
+  const ry=anterior?103:111;
+  const rz=z>z0?74:67;
+  const frontalTaper=anterior?1-.06*((y-y0)/ry)**2:1;
+  const rx=76*frontalTaper;
+  return 1-(x/rx)**2-((y-y0)/ry)**2-((z-z0)/rz)**2;
+}
+
+/** Positive only for this lobe's non-overlapping part of the SAME brain. */
 function partitionField(lobe:Profile,x:number,y:number,z:number):number {
   const own=strength(lobe,x,y,z);
-  if(lobe.id==="insula")return own; // deep lobe is isolated when selected
-  let competing=-Infinity;
+  if(lobe.id==="insula")return own; // deep structure is independently isolated
+  let strongestOther=-Infinity;
   for(const other of OUTER){
-    if(other.id!==lobe.id)competing=Math.max(competing,strength(other,x,y,z));
+    if(other.id!==lobe.id)strongestOther=Math.max(strongestOther,strength(other,x,y,z));
   }
-  // This field is nonpositive where another lobe has a greater claim;
-  // zero crossings become touching partition surfaces, not intersections.
-  return Math.min(own,(own-competing)*.5);
+  // "own" alone would recreate floating ellipsoids with rounded borders.
+  // Constrain every outer lobe to one brain-shaped surface, and use the
+  // equal-strength surfaces as precise shared internal boundaries.
+  // A 1.8-mm medial gap visually separates the cerebral hemispheres.
+  return Math.min(brainEnvelope(x,y,z),(x-1.8)/76,(own-strongestOther)*.5);
 }
 
 // Tetrahedral decomposition of a cube; no CSG dependency required.
@@ -67,16 +85,15 @@ type Vec=[number,number,number];
 function createVolume(lobe:Profile):THREE.BufferGeometry {
   const [cx,cy,cz]=lobe.center;
   const [rx,ry,rz]=lobe.radii;
-  const min:[number,number,number]=[
-    Math.max(0,Math.floor((cx-rx-STEP*2)/STEP)*STEP),
-    Math.floor((cy-ry-STEP*2)/STEP)*STEP,
-    Math.floor((cz-rz-STEP*2)/STEP)*STEP
-  ];
-  const count:[number,number,number]=[
-    Math.ceil((cx+rx+STEP*2-min[0])/STEP),
-    Math.ceil((cy+ry+STEP*2-min[1])/STEP),
-    Math.ceil((cz+rz+STEP*2-min[2])/STEP)
-  ];
+  // All outer lobes use the same complete envelope domain, not
+  // their individual ellipsoid bounding boxes. Otherwise a region can
+  // end at an arbitrary grid edge, leaving visible gaps and flat caps.
+  const min:[number,number,number]=lobe.id==="insula"
+    ? [Math.max(0,Math.floor((cx-rx-STEP*2)/STEP)*STEP),Math.floor((cy-ry-STEP*2)/STEP)*STEP,Math.floor((cz-rz-STEP*2)/STEP)*STEP]
+    : [0,-132,-59];
+  const count:[number,number,number]=lobe.id==="insula"
+    ? [Math.ceil((cx+rx+STEP*2-min[0])/STEP),Math.ceil((cy+ry+STEP*2-min[1])/STEP),Math.ceil((cz+rz+STEP*2-min[2])/STEP)]
+    : [Math.ceil(85/STEP),Math.ceil((99-min[1])/STEP),Math.ceil((101-min[2])/STEP)];
   const [nx,ny,nz]=count;
   const sx=nx+1,sy=ny+1;
   const idx=(i:number,j:number,k:number)=>i+sx*(j+sy*k);
@@ -91,7 +108,23 @@ function createVolume(lobe:Profile):THREE.BufferGeometry {
     const t=Math.max(0,Math.min(1,va/(va-vb)));
     return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   };
-  const triangle=(a:Vec,b:Vec,c:Vec)=>{push(a);push(b);push(c)};
+  const triangle=(a:Vec,b:Vec,c:Vec)=>{
+    // Orient faces consistently outward, so back surfaces don't
+    // show through and darken the translucent partitioned lobes.
+    const ab=new THREE.Vector3((b[0]-a[0]),b[2]-a[2],-(b[1]-a[1]));
+    const ac=new THREE.Vector3((c[0]-a[0]),c[2]-a[2],-(c[1]-a[1]));
+    const normal=ab.cross(ac);
+    const x=(a[0]+b[0]+c[0])/3,y=(a[1]+b[1]+c[1])/3,z=(a[2]+b[2]+c[2])/3;
+    const d=1.5;
+    const gx=partitionField(lobe,x+d,y,z)-partitionField(lobe,x-d,y,z);
+    const gy=partitionField(lobe,x,y+d,z)-partitionField(lobe,x,y-d,z);
+    const gz=partitionField(lobe,x,y,z+d)-partitionField(lobe,x,y,z-d);
+    if(normal.x*(-gx)+normal.y*(-gz)+normal.z*gy<0){
+      push(a);push(c);push(b);
+    }else{
+      push(a);push(b);push(c);
+    }
+  };
   for(let k=0;k<nz;k++)for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
     const positions=CORNERS.map(([di,dj,dk])=>[
       min[0]+(i+di)*STEP,min[1]+(j+dj)*STEP,min[2]+(k+dk)*STEP
@@ -160,9 +193,9 @@ export default function LobeOverlay({center,selection}:{
         <mesh geometry={geometries[lobe.id]}
           onPointerOver={e=>{e.stopPropagation();setHovered(id)}}
           onPointerOut={()=>setHovered(null)}>
-          <meshPhongMaterial color={lobe.color} side={THREE.DoubleSide}
+          <meshPhongMaterial color={lobe.color} side={THREE.FrontSide}
             shininess={12} specular="#334958" transparent
-            opacity={focused?.27:.15} depthWrite={false}/>
+            opacity={focused?.32:.23} depthWrite={false}/>
         </mesh>
         {(focused||hovered===id)&&<Html position={pos}
           distanceFactor={10} center style={{pointerEvents:"none",whiteSpace:"nowrap"}}>
