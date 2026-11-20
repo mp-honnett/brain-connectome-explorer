@@ -46,7 +46,9 @@ export default function SkullLayer({
         metalness: 0,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity,
+        // Wireframe is a distinct visual mode: keep mesh edges visible
+        // when the solid-skull opacity slider is at 0%.
+        opacity: wireframe ? Math.max(.55, opacity) : opacity,
         depthWrite: false,
         wireframe
       });
