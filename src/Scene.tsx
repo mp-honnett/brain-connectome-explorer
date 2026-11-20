@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState, type ComponentRef } fro
 import * as THREE from "three";
 import type { Node, Edge } from "./types";
 import HeadShell from "./HeadShell";
+import SkullLayer from "./SkullLayer";
 import LobeOverlay from "./LobeOverlay";
 import type { LobeSelection } from "./lobePalette";
 
@@ -22,6 +23,9 @@ export type LayerSettings = {
   opacity:number;
   lobeGuides:boolean;
   lobeSelection:LobeSelection;
+  skull:boolean;
+  skullOpacity:number;
+  skullWireframe:boolean;
 };
 
 function AnatomySurface({center,opacity}:{center:THREE.Vector3;opacity:number}){
@@ -49,7 +53,7 @@ function AnatomySurface({center,opacity}:{center:THREE.Vector3;opacity:number}){
   return <primitive object={model} position={[-center.x,-center.y,-center.z]}/>;
 }
 
-function Network({nodes,edges,selected,onSelect,layers}:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings}){
+function Network({nodes,edges,selected,onSelect,layers,skullModel}:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;skullModel:THREE.Group|null}){
  const [hover,setHover]=useState<number|null>(null);
  const center=useMemo(()=>{
    const v=new THREE.Vector3();
@@ -63,6 +67,7 @@ function Network({nodes,edges,selected,onSelect,layers}:{nodes:Node[];edges:Edge
  const neighbours=new Set([selected,...edges.map(e=>e.target)]);
  return <group>
   {layers.head&&<HeadShell center={center} opacity={layers.headOpacity} wireframe={layers.headWireframe}/>}
+  {layers.skull&&skullModel&&<SkullLayer source={skullModel} center={center} opacity={layers.skullOpacity} wireframe={layers.skullWireframe}/>}
   {layers.anatomy&&<Suspense fallback={null}><AnatomySurface center={center} opacity={layers.opacity}/></Suspense>}
   {layers.lobeGuides&&<LobeOverlay center={center} selection={layers.lobeSelection}/>}
   {layers.connections&&edges.map(e=><Line key={e.target} points={[coords(e.source),coords(e.target)]} color={e.value>=0?"#5fd4ff":"#ff9fbb"} lineWidth={Math.max(1,Math.abs(e.value)*3)} transparent opacity={.4+Math.abs(e.value)*.5}/>)}
@@ -97,7 +102,7 @@ function CameraController({snap}:{snap:CameraSnap}){
  },[camera,snap.direction,snap.serial]);
  return <OrbitControls ref={controls} makeDefault enablePan enableZoom minDistance={3} maxDistance={30}/>;
 }
-export default function Scene(props:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;snap:CameraSnap}){
+export default function Scene(props:{nodes:Node[];edges:Edge[];selected:number;onSelect:(i:number)=>void;layers:LayerSettings;snap:CameraSnap;skullModel:THREE.Group|null}){
  return <Canvas camera={{position:[0,0,12],fov:45}} gl={{antialias:true}} dpr={[1,2]}>
   <color attach="background" args={["#091426"]}/><ambientLight intensity={1.3}/><pointLight position={[10,10,10]} intensity={60}/>
   <Network {...props}/><CameraController snap={props.snap}/>
