@@ -176,7 +176,7 @@ export default function App(){
  </AccordionPanel>
  <AccordionPanel section="lobes" title="ANATOMY GUIDE · SCHEMATIC" className="lobe-panel" open={activeSection==="lobes"} onToggle={()=>toggleSection("lobes")}>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.lobeGuides} onChange={e=>updateLayer({lobeGuides:e.target.checked})}/> Show coloured lobe guides</span></label>
- <p className="muted">Soft coloured guide volumes suggest approximate lobe positions. They are schematic, not measured cortical boundaries or validated Shen268 lobe classifications.</p>
+ <p className="muted">The coloured guides now meet at shared, non-overlapping boundaries rather than intersecting translucent blobs. Their shapes and dividing lines are illustrative, not measured cortical boundaries or validated Shen268 classifications.</p>
  <div className="lobe-legend" role="group" aria-label="Select a lobe to highlight">
   <button type="button" disabled={!layers.lobeGuides} className={layers.lobeSelection==="all"?"lobe-choice active":"lobe-choice"} aria-pressed={layers.lobeSelection==="all"} onClick={()=>updateLayer({lobeSelection:"all"})}>
     <span className="lobe-swatch all-swatches" aria-hidden="true">●</span><span>All lobes</span>
