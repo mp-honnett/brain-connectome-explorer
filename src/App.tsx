@@ -3,6 +3,7 @@ import type * as THREE from "three";
 import { loadSkullModel, readSavedSkull, removeSavedSkull, saveSkullLocally } from "./skullLoader";
 import Scene, {type LayerSettings,type CameraSnap,type ViewDirection} from "./Scene";
 import Credits from "./Credits";
+import { EndpointCard } from "./EndpointCard";
 import { LOBES, UNCLASSIFIED_LOBE } from "./lobePalette";
 import {type Dataset,validateData,edgesForNode} from "./types";
 type SidebarSection = "camera" | "anatomy" | "skull" | "lobes" | "conditions" | "inspector" | "provenance";
@@ -198,6 +199,12 @@ export default function App(){
  <span className="correlation-label">{data?.nodes[e.target].label}</span>
  <b className={highlightedTarget===e.target?"highlighted-value":e.value>=0?"positive":"negative"}>{e.value>=0?"+":""}{e.value.toFixed(3)}</b>
  </button>)}</div>}
+ {focusedEdge&&data&&<div className="endpoint-cards" aria-label="Anatomical locations of selected correlation">
+   <p className="endpoint-cards-title">Connection endpoints</p>
+   <EndpointCard node={data.nodes[focusedEdge.source]} dataset={data} role="From"/>
+   <EndpointCard node={data.nodes[focusedEdge.target]} dataset={data} role="To"/>
+   <p className="endpoint-method-note">Coordinates are atlas parcel centroids. Anatomical descriptions are broad, coordinate-derived estimates, not verified Shen268 parcel-to-gyrus labels. The bundled correlation matrix's row-to-parcel correspondence remains provisional.</p>
+ </div>}
  {focusedEdge&&<div className="focus-inspector-controls">
    <label className="layer-toggle"><span><input type="checkbox" checked={soloFocus} onChange={e=>setSoloFocus(e.target.checked)}/> Hide other connections while focused</span></label>
    <button type="button" className="clear-highlight" onClick={()=>setHighlightedTarget(null)}>Clear highlighted connection</button>
