@@ -54,3 +54,11 @@
 .lobe-description strong{color:#f3f8fe}
 .lobe-panel .lobe-disclaimer{font-size:11px;color:#a9c3d7}
 .lobe-label{display:inline-block;color:#f5f8ff;background:#0d253de8;border:1px solid #6599b6;border-radius:7px;padding:6px 9px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 3px 16px #040b18a6}
+
+/* User-imported SU39 CT skull (separate CC BY 4.0 asset) */
+.skull-panel button.secondary:disabled{opacity:.65;cursor:progress}
+.skull-panel .skull-remove{width:100%;margin:6px 0 4px;padding:8px 12px;background:#233245;border:1px solid #496077;color:#cce4f2;font-size:12px}
+.skull-panel .skull-remove:hover{background:#32485e}
+.skull-panel .skull-attribution{font-size:11px;line-height:1.65;color:#a7bed2;margin-top:14px}
+.skull-panel .skull-attribution a{text-decoration:underline;text-underline-offset:2px}
+.skull-panel strong{color:#e5f4ff}
