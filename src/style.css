@@ -120,3 +120,23 @@
 .focus-inspector-controls{padding-top:9px}
 .focus-inspector-controls .layer-toggle{font-size:12px!important}
 @media(max-width:650px){.focus-hud{left:8px;bottom:8px;padding:10px 12px;max-width:calc(100% - 16px)}.focus-hud-nodes{font-size:12px}.focus-hud-score{font-size:16px}.focus-node-label{font-size:9px}}
+
+/* Selected connection's anatomical endpoint cards in Region Inspector. */
+.endpoint-cards{display:grid;gap:10px;margin:17px 0 10px}
+.endpoint-cards-title{margin:0;font-size:12px;font-weight:800;color:#e5f3ff;letter-spacing:.3px}
+.endpoint-card{border:1px solid #33546a;background:#0c2235;border-radius:10px;padding:12px;display:grid;gap:12px;min-width:0}
+.endpoint-card-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.endpoint-card-heading strong{font-size:13px;color:#f2f8ff}
+.endpoint-role{font-size:10px;text-transform:uppercase;font-weight:800;letter-spacing:1px;color:#eed38b}
+.endpoint-overline{font-size:10px;text-transform:uppercase;font-weight:750;letter-spacing:.8px;color:#97bdce}
+.endpoint-area{display:grid;gap:5px}
+.endpoint-area>strong{font-size:13px;line-height:1.45;color:#f5e5b8;overflow-wrap:anywhere}
+.endpoint-area p{font-size:12px;color:#d1e1ed;margin:0;line-height:1.5}
+.endpoint-coordinates{display:grid;gap:8px;border-top:1px solid #2a475e;padding-top:10px}
+.endpoint-axes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;font-variant-numeric:tabular-nums}
+.endpoint-axes span{padding:7px 4px;background:#153146;color:#e7f5ff;text-align:center;border-radius:5px;font-size:12px;white-space:nowrap}
+.endpoint-axes b{color:#83d9ed}
+.endpoint-coordinates small{font-size:10px;line-height:1.5;color:#93b5c6}
+.endpoint-confidence,.endpoint-method-note{font-size:10px;line-height:1.55;color:#aac1ce;margin:0}
+.endpoint-confidence{border-top:1px solid #2b4557;padding-top:9px}
+.endpoint-method-note{padding:3px 1px}
