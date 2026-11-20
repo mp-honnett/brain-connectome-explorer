@@ -1,4 +1,6 @@
 import {useEffect,useMemo,useRef,useState} from "react";
+import type * as THREE from "three";
+import { loadSkullModel, readSavedSkull, removeSavedSkull, saveSkullLocally } from "./skullLoader";
 import Scene, {type LayerSettings,type CameraSnap,type ViewDirection} from "./Scene";
 import Credits from "./Credits";
 import { LOBES, UNCLASSIFIED_LOBE } from "./lobePalette";
@@ -19,9 +21,60 @@ export default function App(){
  const [limit,setLimit]=useState(16);
  const [snap,setSnap]=useState<CameraSnap>({direction:"caudal",serial:0});
  const chooseView=(direction:ViewDirection)=>setSnap(prev=>({direction,serial:prev.serial+1}));
- const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.16,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all"});
+ const [layers,setLayers]=useState<LayerSettings>({head:true,headOpacity:.16,headWireframe:false,anatomy:true,parcels:true,connections:true,opacity:.22,lobeGuides:true,lobeSelection:"all",skull:false,skullOpacity:.32,skullWireframe:false});
  const updateLayer=(part:Partial<LayerSettings>)=>setLayers(previous=>({...previous,...part}));
  const fileInput=useRef<HTMLInputElement>(null);
+ const skullInput=useRef<HTMLInputElement>(null);
+ const [skullModel,setSkullModel]=useState<THREE.Group|null>(null);
+ const [skullName,setSkullName]=useState("");
+ const [skullBusy,setSkullBusy]=useState(false);
+ const [skullError,setSkullError]=useState("");
+ const [skullSaved,setSkullSaved]=useState(false);
+ useEffect(()=>{
+   let active=true;
+   readSavedSkull().then(async stored=>{
+     if(!stored)return;
+     const model=await loadSkullModel(stored.blob,stored.name);
+     if(active){
+       setSkullModel(model);
+       setSkullName(stored.name);
+       setSkullSaved(true);
+       setLayers(previous=>({...previous,skull:true}));
+     }
+   }).catch(()=>{ /* local storage is optional: file selection still works */ });
+   return ()=>{ active=false; };
+ },[]);
+ async function importSkull(file?:File){
+   if(!file)return;
+   setSkullBusy(true);
+   setSkullError("");
+   try {
+     const model=await loadSkullModel(file,file.name);
+     setSkullModel(model);
+     setSkullName(file.name);
+     setLayers(previous=>({...previous,skull:true}));
+     try {
+       await saveSkullLocally(file);
+       setSkullSaved(true);
+     }catch{
+       setSkullSaved(false);
+       setSkullError("Model loaded for this session. This browser could not save it for next time; re-import after a reload.");
+     }
+   }catch(e){
+     setSkullError("Skull import failed: "+String(e instanceof Error?e.message:e));
+   }finally{
+     setSkullBusy(false);
+     if(skullInput.current)skullInput.current.value="";
+   }
+ }
+ async function clearSkull(){
+   try{await removeSavedSkull();}catch{/* browser storage is optional */}
+   setSkullSaved(false);
+   setSkullModel(null);
+   setSkullName("");
+   setSkullError("");
+   setLayers(previous=>({...previous,skull:false}));
+ }
  const importData=(value:unknown)=>{const d=validateData(value);setData(d);setCondition(Object.keys(d.conditions)[0]);setSelected(0);setError("");};
  useEffect(()=>{fetch(import.meta.env.BASE_URL+"data/connectome.json").then(async r=>{if(!r.ok)throw Error("No processed data installed.");importData(await r.json())}).catch(e=>setError(String(e.message||e)))},[]);
  async function importFile(file?:File){if(!file)return;try{importData(JSON.parse(await file.text()))}catch(e){setError("Import failed: "+String(e))}}
@@ -30,7 +83,7 @@ export default function App(){
  return <div className="app">
  <header><div><strong className="brand">BRAIN<span>CONNECT</span></strong><div className="caption">Functional network explorer</div></div><nav className="site-nav" aria-label="Site sections"><button type="button" className={tab==="explore"?"site-tab active":"site-tab"} aria-current={tab==="explore"?"page":undefined} onClick={()=>chooseTab("explore")}>Explorer</button><button type="button" className={tab==="credits"?"site-tab active":"site-tab"} aria-current={tab==="credits"?"page":undefined} onClick={()=>chooseTab("credits")}>Credits &amp; Licences</button></nav><div className="header-right"><span>{data?"● Data loaded":"○ Awaiting verified data"}</span><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">YaleNeuroConnect ↗</a></div></header>
  <main>{tab==="credits"?<Credits metadata={data?.metadata}/>:<><section className="visual"><div className="intro"><p className="eyebrow">INTERACTIVE CONNECTOME</p><h1>Explore the connected brain.</h1><p>Explore region-to-region functional correlations through a spatial 3D network.</p></div>
- <div className="stage">{data&&matrix?<Scene nodes={data.nodes} edges={edges} selected={selected} onSelect={setSelected} layers={layers} snap={snap}/>:<div className="empty"><div className="orb">◎</div><h2>Ready for real brain data</h2><p>YaleNeuroConnect measurements are not bundled. Import a validated connectome JSON to activate the 3D viewer. No synthetic connections are shown as real measurements.</p><button onClick={()=>fileInput.current?.click()}>Import connectome JSON</button><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">Explore source dataset ↗</a></div>}</div>
+ <div className="stage">{data&&matrix?<Scene nodes={data.nodes} edges={edges} selected={selected} onSelect={setSelected} layers={layers} snap={snap} skullModel={skullModel}/>:<div className="empty"><div className="orb">◎</div><h2>Ready for real brain data</h2><p>YaleNeuroConnect measurements are not bundled. Import a validated connectome JSON to activate the 3D viewer. No synthetic connections are shown as real measurements.</p><button onClick={()=>fileInput.current?.click()}>Import connectome JSON</button><a href="https://openneuro.org/datasets/ds007286" target="_blank" rel="noreferrer">Explore source dataset ↗</a></div>}</div>
  <div className="note"><b>Interpretation</b><p>Connections show correlation between measured fMRI time series, not physical fibre tracts or causal communication. Display thresholds are not statistical significance tests.</p></div></section>
  <aside><div className="panel"><p className="eyebrow">CAMERA VIEWS</p>
  <div className="view-buttons">
@@ -51,6 +104,21 @@ export default function App(){
  <label>Brain transparency <b>{Math.round((1-layers.opacity)*100)}%</b></label>
  <input type="range" min="0.05" max="0.8" step="0.05" disabled={!layers.anatomy} value={layers.opacity} onChange={e=>updateLayer({opacity:Number(e.target.value)})}/>
  <p className="muted">The translucent surface is a smoothed outline derived from the Shen268 atlas, not a detailed subject MRI. The connecting lines are statistical fMRI relationships, not axon pathways.</p></div>
+ <div className="panel skull-panel">
+ <p className="eyebrow">REAL CT SKULL · OPTIONAL LAYER</p>
+ <label className="layer-toggle"><span><input type="checkbox" checked={layers.skull} disabled={!skullModel} onChange={e=>updateLayer({skull:e.target.checked})}/> Human skull SU39 (CT scan)</span></label>
+ <p className="muted">Use the model from SusanElaineJones on Sketchfab. Import the original ZIP or the prepared GLB. The model loads in your browser and is never uploaded to Honnett.</p>
+ <button type="button" className="secondary" disabled={skullBusy} onClick={()=>skullInput.current?.click()}>{skullBusy?"Loading skull…":skullModel?"Replace skull model":"Import skull ZIP / GLB"}</button>
+ <input hidden type="file" accept=".zip,.glb,application/zip,model/gltf-binary" ref={skullInput} onChange={e=>importSkull(e.target.files?.[0])}/>
+ {skullModel&&<p className="muted"><strong>Loaded:</strong> {skullName} {skullSaved?"· Saved in this browser":"· This session only"}</p>}
+ {skullModel&&<button type="button" className="skull-remove" onClick={clearSkull}>Remove imported skull</button>}
+ <label>Skull opacity <b>{Math.round(layers.skullOpacity*100)}%</b></label>
+ <input type="range" min="0.05" max="1" step="0.05" disabled={!layers.skull||!skullModel} value={layers.skullOpacity} onChange={e=>updateLayer({skullOpacity:Number(e.target.value)})}/>
+ <label className="layer-toggle"><span><input type="checkbox" checked={layers.skullWireframe} disabled={!layers.skull||!skullModel} onChange={e=>updateLayer({skullWireframe:e.target.checked})}/> Skull wireframe</span></label>
+ {skullError&&<p className="error" role="status">{skullError}</p>}
+ <p className="muted">Approximate visual alignment only: SU39 is a different CT subject and has <strong>not</strong> been registered to Shen268 or YaleNeuroConnect.</p>
+ <p className="skull-attribution">Based on <a href="https://sketchfab.com/3d-models/human-skull-su39-from-ct-scan-e375b7b910d14547854ac7d1b2a5e1ed" target="_blank" rel="noopener noreferrer">Human skull SU39 from CT scan</a> by <a href="https://sketchfab.com/SusanElaineJones" target="_blank" rel="noopener noreferrer">SusanElaineJones</a>. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Prepared GLB simplifies triangles and changes the material. Rights for this skull are separate from the software licence.</p>
+ </div>
  <div className="panel lobe-panel">
  <p className="eyebrow">ANATOMY GUIDE · SCHEMATIC</p>
  <label className="layer-toggle"><span><input type="checkbox" checked={layers.lobeGuides} onChange={e=>updateLayer({lobeGuides:e.target.checked})}/> Show coloured lobe guides</span></label>
